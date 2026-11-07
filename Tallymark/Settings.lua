@@ -81,7 +81,10 @@ local function Stacker(page)
         n:SetWordWrap(true)
         y = y - (gap or 0)
         n:SetPoint("TOPLEFT", 0, y)
-        n:SetPoint("RIGHT", page, "RIGHT", 0, 0)
+        -- A fixed width (the page's width) so the text wraps onto more lines
+        -- instead of ending in "...", and its height is right when measured.
+        n:SetWidth(T().sizes.windowWidth - T().sizes.padding * 2)
+        n:SetMaxLines(4)
         n:SetText(text)
         y = y - n:GetStringHeight()
     end
@@ -140,7 +143,7 @@ local function BuildMini(page)
             TM.db.mini.opacity = v / 100
             TM.Mini:ApplyLook()
         end))
-    s.Note("While you are on this page, the small window shows on screen so you can see your changes. Drag it to move it. Right-click it to open settings.", 16)
+    s.Note("While this page is open, the small window shows on screen so you can see your changes.", 16)
 end
 
 local function BuildAmmo(page)
