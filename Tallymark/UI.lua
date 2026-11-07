@@ -459,7 +459,9 @@ function UI:IsSettingsShown()
 end
 
 -- Switches the window between stats (off) and settings (on).
-function UI:ShowSettings(on, section)
+-- toStats: when leaving settings, stay on the big window's stats (the gear)
+-- even if the small window is on. Done, X and the minimap go to the small one.
+function UI:ShowSettings(on, section, toStats)
     self:GetFrame()
     self.settingsOn = on and true or false
 
@@ -485,9 +487,14 @@ function UI:ShowSettings(on, section)
     self.gear.icon:SetVertexColor(T():RGB(self.gear.color))
 
     -- Settings always use the big window. Leaving settings in small window
-    -- mode (Done, gear, X, minimap) swaps back to the small window.
+    -- mode (Done, X, minimap) swaps back to the small window. The gear goes
+    -- to the big window's stats instead.
     if not on and TM.db.window.small and not self.closing then
-        self:Show()
+        if toStats then
+            TM.Mini:Hide()
+        else
+            self:Show()
+        end
     end
 end
 
@@ -563,7 +570,7 @@ local function Build()
     end)
     gear:SetPoint("RIGHT", close, "LEFT", -6, 0)
     gear:SetScript("OnClick", function(self)
-        TM.Settings:Toggle()
+        TM.Settings:Toggle(true)          -- from settings, back to these stats
         self:GetScript("OnEnter")(self)   -- refresh the tooltip text
     end)
     UI.gear = gear
@@ -765,10 +772,15 @@ function UI:Show()
 end
 
 function UI:Hide()
-    -- Closing settings while the small window is on goes back to the small
-    -- window instead of hiding everything.
-    if TM.db.window.small and self.settingsOn and self.frame and self.frame:IsShown() then
-        self:ShowSettings(false)
+    -- With the small window on, closing the big window (settings or stats)
+    -- goes back to the small window instead of hiding everything.
+    if TM.db.window.small and self.frame and self.frame:IsShown() then
+        self.closing = true
+        if self.settingsOn then self:ShowSettings(false) end
+        self.closing = false
+        self.frame:Hide()
+        TM.Mini:Show()
+        TM.db.window.shown = true
         return
     end
     if self.frame then
@@ -780,6 +792,15 @@ function UI:Hide()
     end
     TM.Mini:Hide()
     TM.db.window.shown = false
+end
+
+-- Opens the big window on its stats (Ammo, Journey, History), also when the
+-- small window is on. Clicking the small window does this.
+function UI:ShowFull()
+    TM.db.window.shown = true
+    self:GetFrame():Show()
+    if self.settingsOn then self:ShowSettings(false, nil, true) end
+    TM.Mini:Hide()
 end
 
 -- Settings > "Small window" changed while settings are open.

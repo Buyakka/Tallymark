@@ -2,7 +2,8 @@
 -- The small window: a compact card that can stay on screen all the time.
 -- Turned on with Settings > General > "Small window". When it is on, /tally,
 -- /tm and the minimap left-click show or hide this card instead of the big
--- window. Right-click the card for settings (opens in the big window).
+-- window. Click the card for the full window, right-click for settings.
+-- Closing the full window comes back to the card.
 -- Shows steps today, distance today, and for hunters: ammo this fight (or
 -- last fight) and arrows or bullets left (gold when low).
 -- It has its own position, size and opacity, and follows the lock and
@@ -59,20 +60,32 @@ local function Build()
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart", function(self)
+        self.dragged = true
         if not TM.db.window.locked then self:StartMoving() end
     end)
     f:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
         SavePosition(self)
     end)
-    f:SetScript("OnMouseUp", function(_, button)
-        if button == "RightButton" then TM.Settings:Open() end
+    -- Left-click: the full window (Ammo, Journey, History). Right-click: settings.
+    -- A drag is not a click.
+    f:SetScript("OnMouseUp", function(self, button)
+        if self.dragged then
+            self.dragged = false
+            return
+        end
+        if button == "RightButton" then
+            TM.Settings:Open()
+        elseif button == "LeftButton" then
+            TM.UI:ShowFull()
+        end
     end)
     f:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:AddLine("Tallymark")
-        GameTooltip:AddLine("Drag to move. Right-click for settings.", 1, 1, 1)
-        GameTooltip:AddLine("Turn off \"Small window\" in settings for the full window.", 1, 1, 1, true)
+        GameTooltip:AddLine("Click: full window (Ammo, Journey, History)", 1, 1, 1)
+        GameTooltip:AddLine("Right-click: settings", 1, 1, 1)
+        GameTooltip:AddLine("Drag: move", 1, 1, 1)
         GameTooltip:Show()
     end)
     f:SetScript("OnLeave", function() GameTooltip:Hide() end)

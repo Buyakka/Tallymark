@@ -234,9 +234,10 @@ function Settings:Open(section)
     TM.UI:ShowSettings(true, section)
 end
 
-function Settings:Toggle()
+-- toStats: leave settings to the big window's stats (the gear button).
+function Settings:Toggle(toStats)
     if TM.UI:IsSettingsShown() then
-        TM.UI:ShowSettings(false)
+        TM.UI:ShowSettings(false, nil, toStats)
     else
         self:Open()
     end
