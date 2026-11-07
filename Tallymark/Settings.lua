@@ -127,7 +127,7 @@ local function BuildAmmo(page)
             TM.db.ammo.warnAt = v
             TM.UI:Refresh()
         end))
-    s.Add(W.Checkbox(page, "Pop-up alert", "A short alert near the top of the screen when you drop below that amount.",
+    s.Add(W.Checkbox(page, "Pop-up alert", "A short alert at the top of the screen. Waits until the fight ends.",
         function() return TM.db.ammo.popup end,
         function(v) TM.db.ammo.popup = v end))
 
