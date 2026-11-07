@@ -108,7 +108,7 @@ local function BuildGeneral(page)
             TM.db.window.opacity = v / 100
             TM.UI:ApplyOpacity()
         end))
-    s.Add(W.Checkbox(page, "Hide during combat", "Both windows come back by themselves when the fight ends.",
+    s.Add(W.Checkbox(page, "Hide during combat", "Both windows come back when the fight ends.",
         function() return TM.db.window.hideInCombat end,
         function(v) TM.db.window.hideInCombat = v end))
 
