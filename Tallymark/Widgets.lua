@@ -193,7 +193,8 @@ local function LabelBlock(row, label, desc)
         row.desc = W.Text(row, "body", S.cardLabel, "muted")
         row.desc:SetText(desc)
         row.desc:SetPoint("TOPLEFT", row.label, "BOTTOMLEFT", 0, -4)
-        row.desc:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        -- Same right edge as the label, so it never runs under a box or value.
+        row.desc:SetPoint("RIGHT", row.label, "RIGHT", 0, 0)
     end
 end
 
@@ -307,6 +308,7 @@ function W.Switch(parent, label, desc, options, get, set)
     row:SetHeight(desc and 70 or 54)
     LabelBlock(row, label, desc)
     row.label:SetPoint("TOPLEFT")
+    row.label:SetPoint("RIGHT", row, "RIGHT", 0, 0)
 
     local group = W.Box(row, "cardBg", "border", T().radius.button)
     group:SetHeight(30)

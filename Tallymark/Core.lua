@@ -66,7 +66,9 @@ local DB_DEFAULTS = {
     ammo = {
         warn   = true,              -- low ammo warning on the window (gold card, box)
         warnAt = 200,               -- warn below this many arrows or bullets
-        popup  = true,              -- pop-up alert when ammo drops below warnAt
+        popup        = true,        -- pop-up alert when ammo drops below popupAt
+        popupAt      = 200,         -- pop up below this many arrows or bullets
+        popupSeconds = 3,           -- how long the pop-up stays before fading
     },
     journey = {
         stride = 1.0,               -- yards per step
@@ -79,6 +81,13 @@ function TM:LowAmmoAt()
     local a = self.db and self.db.ammo
     if not a or not a.warn then return nil end
     return a.warnAt
+end
+
+-- Amount the pop-up alert fires below, or nil when the pop-up is off.
+function TM:PopupAt()
+    local a = self.db and self.db.ammo
+    if not a or not a.popup then return nil end
+    return a.popupAt or 200
 end
 
 -- Per character stats (TallymarkCharDB). Each module adds its own table here
