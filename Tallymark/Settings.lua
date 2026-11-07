@@ -20,7 +20,7 @@ local RESET_KEYS = {
     { "window", "locked" }, { "window", "scale" }, { "window", "hideInCombat" },
     { "minimap", "hide" },
     { "ammo", "warn" }, { "ammo", "warnAt" },
-    { "ammo", "popup" }, { "ammo", "popupAt" }, { "ammo", "popupSeconds" },
+    { "ammo", "popup" }, { "ammo", "popupSeconds" },
     { "journey", "stride" },
     { "units" },
 }
@@ -115,34 +115,32 @@ local function BuildAmmo(page)
     if not hunter then
         s.Note("Ammo tracking is for hunters. These settings apply to your hunters.")
     end
-    s.Heading("ON THE WINDOW", hunter and 0 or 16)
-    s.Add(W.Checkbox(page, "Low ammo warning", "Gold ammo card, bell and a reminder box on the window.",
+    -- One amount drives both warnings; each can be turned on or off.
+    s.Heading("LOW AMMO", hunter and 0 or 16)
+    s.Add(W.NumberBox(page, "Warn me below", "Arrows or bullets left in your bags. Like 100, 200 or 1000.", 1, 5000, 0,
+        function() return TM.db.ammo.warnAt end,
+        function(v)
+            TM.db.ammo.warnAt = v
+            TM.UI:Refresh()
+        end), 0)
+
+    s.Heading("HOW TO WARN ME")
+    s.Add(W.Checkbox(page, "On the window", "Ammo card turns gold, with a bell and a reminder box.",
         function() return TM.db.ammo.warn end,
         function(v)
             TM.db.ammo.warn = v
             TM.UI:Refresh()
         end))
-    s.Add(W.NumberBox(page, "Warn me below", "Arrows or bullets left, in all your bags.", 1, 5000, 0,
-        function() return TM.db.ammo.warnAt end,
-        function(v)
-            TM.db.ammo.warnAt = v
-            TM.UI:Refresh()
-        end))
-
-    s.Heading("POP-UP ALERT")
     s.Add(W.Checkbox(page, "Pop-up alert", "A short alert in the middle of the screen, also during a fight.",
         function() return TM.db.ammo.popup end,
         function(v) TM.db.ammo.popup = v end))
-    s.Add(W.NumberBox(page, "Pop up below", "Like 100, 200 or 1000. Pops up once.", 1, 5000, 0,
-        function() return TM.db.ammo.popupAt end,
-        function(v) TM.db.ammo.popupAt = v end))
-    s.Add(W.Slider(page, "Show for", nil, 1, 10, 1,
+    s.Add(W.Slider(page, "Pop-up shows for", nil, 1, 10, 1,
         function(v) return string.format("%d sec", v) end,
         function() return TM.db.ammo.popupSeconds end,
         function(v) TM.db.ammo.popupSeconds = v end))
 
     local test = W.TextButton(page, "Show a test alert")
-    test:SetScript("OnClick", function() TM.Popup:ShowLowAmmo(math.max(0, (TM.db.ammo.popupAt or 200) - 1), true) end)
+    test:SetScript("OnClick", function() TM.Popup:ShowLowAmmo(math.max(0, (TM.db.ammo.warnAt or 200) - 1), true) end)
     s.Add(test, 16, true)
 end
 

@@ -19,4 +19,4 @@
 - Low ammo pop-up: a gold alert near the top of the screen when ammo drops below the warning amount, and once after login if already low. Fades out after a few seconds.
 - Gear button now opens settings (it used to lock the window). Minimap right-click opens settings too.
 - Settings now open inside the main window instead of a second window. The gear switches between stats and settings; the tabs become General, Ammo warning, Journey; the footer shows Reset to default and Done. Window size applies when you let go of the slider.
-- Low ammo pop-up has its own settings: on/off, the amount it pops up below (100, 200, 1000, anything), and how long it stays (1 to 10 seconds, default 3). It shows right away in the upper middle of the screen, also during a fight, and is smaller than before. Clicks go through it.
+- Low ammo warning settings: one "Warn me below" amount (100, 200, 1000, anything) used by both warnings. Turn each on or off: on the window (gold card, bell, reminder box) and pop-up alert. Pop-up shows for 1 to 10 seconds (default 3), right away in the upper middle of the screen, also during a fight. Clicks go through it.
