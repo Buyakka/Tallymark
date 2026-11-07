@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 (Beta) - first release
+## 0.1.0 - first release
 
 ### Journey
 - Distance traveled and estimated steps, for today, this session and lifetime.
