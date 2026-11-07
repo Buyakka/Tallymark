@@ -657,19 +657,24 @@ local function Build()
     statsFoot:SetPoint("BOTTOMLEFT")
     statsFoot:SetPoint("BOTTOMRIGHT")
     statsFoot:SetHeight(S.footerHeight)
-    local version = Text(statsFoot, "body", S.footerText, "footer")
-    version:SetPoint("LEFT", S.padding, 0)
-    version:SetText("Tallymark v" .. TM.VERSION)
+    -- Left: whose stats these are (saved per character), in class color.
+    local who = Text(statsFoot, "body", S.footerText, "footer")
+    who:SetPoint("LEFT", S.padding, 0)
+    who:SetPoint("RIGHT", statsFoot, "CENTER", 40, 0)
+    local name, class = TM:CharName()
+    local cc = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
+    who:SetText(name)
+    if cc then who:SetTextColor(cc.r, cc.g, cc.b) end
     local author = Text(statsFoot, "body", S.footerText, "footer", "RIGHT")
     author:SetPoint("RIGHT", -S.padding, 0)
-    author:SetText("by Buyaka")
+    author:SetText("v" .. TM.VERSION .. " · by Buyaka")
     UI.statsFoot = statsFoot
 
     local settingsFoot = CreateFrame("Frame", nil, f)
     settingsFoot:SetPoint("BOTTOMLEFT")
     settingsFoot:SetPoint("BOTTOMRIGHT")
     settingsFoot:SetHeight(S.footerHeight)
-    local reset = TM.W.TextButton(settingsFoot, "Reset to default")
+    local reset = TM.W.TextButton(settingsFoot, "Reset settings")   -- settings only, never stats
     reset:SetHeight(28)
     reset:SetPoint("LEFT", S.padding, 0)
     reset:SetScript("OnClick", function() TM.Settings.ResetToDefault() end)

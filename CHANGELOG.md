@@ -27,10 +27,12 @@
 
 ### Settings
 - Open from the gear, the minimap right-click, `/tally settings`, or Options > AddOns > Tallymark.
-- Tabs: General, Small window, Ammo, Journey. Reset to default.
+- Tabs: General, Small window, Ammo, Journey. "Reset settings" puts settings back without touching your stats.
+- Reset your stats to zero: journey, ammo, or all. Asks first, and only affects the character you're on.
 - Done or the gear goes back to the main window. The X or Escape closes it (back to the small window if you use it).
 
 ### Other
+- Stats are saved per character. The window shows which character you're looking at.
 - Minimap button with quick stats on hover.
 - `/tally` and `/tm` commands. `/tally help` lists them all.
 - `/tally test` checks what Tallymark can read where you are.

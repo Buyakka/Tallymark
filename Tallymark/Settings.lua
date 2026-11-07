@@ -14,7 +14,7 @@ TM.Settings = Settings
 local function T() return TM.Theme end
 local W = TM.W
 
--- Settings that "Reset to default" puts back. Window position, open tab and
+-- Settings that "Reset settings" puts back. Window position, open tab and
 -- the stats themselves are never touched.
 local RESET_KEYS = {
     { "window", "small" }, { "mini", "scale" }, { "mini", "opacity" }, { "window", "locked" }, { "window", "scale" }, { "window", "opacity" },
@@ -32,6 +32,38 @@ local function RefreshAll()
     TM.UI:ApplyScale()
     TM.UI:ApplyOpacity()
     TM.UI:Refresh()
+end
+
+-- Resetting stats asks first, since it can't be undone.
+local RESET_WHAT = {
+    journey = "your journey stats (steps and distance)",
+    ammo    = "your ammo stats (shots, fights and dungeon runs)",
+    all     = "ALL your stats (journey and ammo)",
+}
+
+local function DoResetStats(kind)
+    if kind == "journey" or kind == "all" then TM.Journey:Reset() end
+    if kind == "ammo" or kind == "all" then TM.Arrows:Reset() end
+    TM.UI:Refresh()
+    TM:Print("Stats reset for " .. (TM:CharName()) .. ".")
+end
+
+StaticPopupDialogs["TALLYMARK_RESET_STATS"] = {
+    text = "Reset %s for %s?
+
+They go back to zero. This can't be undone.",
+    button1 = "Reset",
+    button2 = "Cancel",
+    OnAccept = function(self, data) DoResetStats(data or self.data) end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    showAlert = true,
+    preferredIndex = 3,
+}
+
+local function AskResetStats(kind)
+    StaticPopup_Show("TALLYMARK_RESET_STATS", RESET_WHAT[kind], (TM:CharName()), kind)
 end
 
 local function ResetToDefault()
@@ -119,6 +151,23 @@ local function BuildGeneral(page)
     s.Add(W.Checkbox(page, "Show minimap button", "You can always open Tallymark with /tally or /tm.",
         function() return not TM.db.minimap.hide end,
         function(v) TM.MinimapButton:SetHidden(not v) end))
+
+    -- Stats are saved per character. Each button asks before resetting.
+    s.Heading("YOUR STATS")
+    s.Note("Only for " .. (TM:CharName()) .. ". Your other characters keep theirs.", 6)
+    local row = CreateFrame("Frame", nil, page)
+    row:SetHeight(32)
+    local x = 0
+    local buttons = { { "journey", "Reset journey" } }
+    if TM.Arrows and TM.Arrows.enabled then buttons[#buttons + 1] = { "ammo", "Reset ammo" } end
+    buttons[#buttons + 1] = { "all", "Reset all" }
+    for _, b in ipairs(buttons) do
+        local btn = W.TextButton(row, b[2])
+        btn:SetPoint("LEFT", x, 0)
+        btn:SetScript("OnClick", function() AskResetStats(b[1]) end)
+        x = x + btn:GetWidth() + 8
+    end
+    s.Add(row, 10)
 end
 
 -- The small window has its own size and opacity. While this page is open and

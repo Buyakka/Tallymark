@@ -118,6 +118,20 @@ local function FillDefaults(t, defaults)
     end
 end
 
+TM.FillDefaults = FillDefaults
+
+-- "Name - Realm" and the class file name (for the class color).
+-- Stats are saved per character, so the window shows whose they are.
+function TM:CharName()
+    local name = UnitName("player") or "?"
+    local realm = GetRealmName and GetRealmName() or nil
+    local _, class = UnitClass("player")
+    if type(realm) == "string" and realm ~= "" then
+        return name .. " - " .. realm, class
+    end
+    return name, class
+end
+
 -- Migrations: MIGRATIONS[n] upgrades a table from schema n-1 to schema n.
 -- Never wipe data here. Only move or add.
 local DB_MIGRATIONS = {

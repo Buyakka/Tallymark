@@ -453,6 +453,21 @@ function Arrows:ShotListCheck()
     return SHOT_IDS
 end
 
+-- Settings > General > Reset: shots, fights and dungeon runs back to zero
+-- for this character only. A fight in progress keeps going from zero.
+function Arrows:Reset()
+    TM.char.arrows = {}
+    TM.FillDefaults(TM.char.arrows, TM.CHAR_DEFAULTS.arrows)
+    if fight then
+        fight.shots, fight.byShot, fight.startAmmo = 0, {}, nil
+    end
+    wipe(pending)
+    wipe(casts)
+    wipe(spellStats)
+    CheckInstance()     -- inside a dungeon: start a fresh run
+    UpdateAmmo()
+end
+
 function Arrows:Init()
     if not self:IsHunter() then return end
     self.enabled = true

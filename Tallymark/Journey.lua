@@ -179,6 +179,16 @@ function Journey:FormatDistance(yards)
     return string.format("%.2f mi", yards / YARDS_PER_MILE)
 end
 
+-- Settings > General > Reset: back to zero for this character only.
+function Journey:Reset()
+    TM.char.journey = {}
+    TM.FillDefaults(TM.char.journey, TM.CHAR_DEFAULTS.journey)
+    CheckNewDay()
+    session.yards, session.steps, session.started = 0, 0, GetTime()
+    last = nil
+    wipe(debugTicks)
+end
+
 function Journey:Init()
     CheckNewDay()
     session.started = GetTime()
