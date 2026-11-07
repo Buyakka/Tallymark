@@ -227,7 +227,9 @@ local function BuildAmmo(page)
     p.combat = CreateFrame("Frame", nil, page)
     p.combat:SetPoint("TOPLEFT")
     p.combat:SetSize(200, 16)
-    local dot = Solid(p.combat, "accent")
+    local dot = p.combat:CreateTexture(nil, "ARTWORK")
+    dot:SetTexture(T().textures.circle)   -- round dot, like the design
+    dot:SetVertexColor(T():RGB("accent"))
     dot:SetSize(S.dot, S.dot)
     dot:SetPoint("LEFT")
     p.combatText = Text(p.combat, "bodyBold", S.heading, "accent")
@@ -249,7 +251,7 @@ local function BuildAmmo(page)
     bell:SetPoint("TOPRIGHT", -8, -8)
     p.bell = bell
 
-    Heading(page, -204, "BY SHOT · LIFETIME")
+    p.shotHeading = Heading(page, -204, "BY SHOT · THIS FIGHT")
     p.rows = {}
     for i = 1, MAX_SHOT_ROWS do
         p.rows[i] = BarRow(page, -224 - (i - 1) * 34)
@@ -338,9 +340,12 @@ local function RefreshAmmo(page)
         p.low:Hide()
     end
 
-    -- By shot (lifetime)
+    -- By shot: this fight in combat, the last fight out of combat.
+    local source = fight or A:LastFight()
+    local byShot = source and source.byShot or {}
+    p.shotHeading:SetText(fight and "BY SHOT · THIS FIGHT" or "BY SHOT · LAST FIGHT")
     local list = {}
-    for name, count in pairs(d.byShot) do list[#list + 1] = { name = name, n = count } end
+    for name, count in pairs(byShot) do list[#list + 1] = { name = name, n = count } end
     table.sort(list, function(a, b) return a.n > b.n end)
     local top = list[1] and list[1].n or 0
     p.noShots:SetShown(#list == 0)

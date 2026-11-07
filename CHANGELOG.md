@@ -13,3 +13,4 @@
 - Minimap button in the standard gold ring, with the seal arrowhead. Left-click shows or hides the window, right-click locks it, drag to move, hover for steps today and ammo left. `/tally minimap` hides or shows it.
 - `/tm` works the same as `/tally`.
 - Window matches the design: rounded corners, gear and close buttons, label next to the big number, bell on the ammo card, "Time to restock." message.
+- "By shot" bars show this fight while in combat, and the last fight after it ends.
