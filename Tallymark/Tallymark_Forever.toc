@@ -15,5 +15,6 @@ Journey.lua
 Arrows.lua
 Popup.lua
 UI.lua
+Mini.lua
 Settings.lua
 Minimap.lua

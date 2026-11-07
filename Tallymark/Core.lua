@@ -53,12 +53,19 @@ local DB_DEFAULTS = {
         shown    = false,
         locked   = false,
         scale    = 1.0,         -- window size, 0.7 to 1.3
-        opacity  = 1.0,         -- window background, 0.2 to 1 (text always solid)
+        opacity  = 1.0,         -- whole window (and small window), 0.2 to 1
+        small    = false,       -- show the small window instead of the big one
         hideInCombat = false,
         point    = "CENTER",
         relPoint = "CENTER",
         x        = 0,
         y        = 0,
+    },
+    mini = {                    -- small window position
+        point    = "RIGHT",
+        relPoint = "RIGHT",
+        x        = -60,
+        y        = 120,
     },
     minimap = {
         hide  = false,

@@ -17,7 +17,8 @@ local W = TM.W
 -- Settings that "Reset to default" puts back. Window position, open tab and
 -- the stats themselves are never touched.
 local RESET_KEYS = {
-    { "window", "locked" }, { "window", "scale" }, { "window", "opacity" }, { "window", "hideInCombat" },
+    { "window", "small" }, { "window", "locked" }, { "window", "scale" }, { "window", "opacity" },
+    { "window", "hideInCombat" },
     { "minimap", "hide" },
     { "ammo", "warn" }, { "ammo", "warnAt" },
     { "ammo", "popup" }, { "ammo", "popupSeconds" },
@@ -90,6 +91,9 @@ end
 local function BuildGeneral(page)
     local s = Stacker(page)
     s.Heading("WINDOW", 0)
+    s.Add(W.Checkbox(page, "Small window", "Steps and ammo in a small card you can keep on screen.",
+        function() return TM.db.window.small end,
+        function(v) TM.UI:SetSmall(v) end))
     s.Add(W.Checkbox(page, "Lock window position", "Stops the window from being dragged by accident.",
         function() return TM.db.window.locked end,
         function(v) TM.UI:SetLocked(v) end))
@@ -100,7 +104,7 @@ local function BuildGeneral(page)
         function() return math.floor((TM.db.window.scale or 1) * 100 + 0.5) end,
         function(v) TM.db.window.scale = v / 100 end))
     size.slider:HookScript("OnMouseUp", function() TM.UI:ApplyScale() end)
-    s.Add(W.Slider(page, "Background opacity", "Lower it to see the game through the window. Text stays clear.", 20, 100, 5,
+    s.Add(W.Slider(page, "Window opacity", "Lower it to see the game through the window.", 20, 100, 5,
         function(v) return string.format("%d%%", v) end,
         function() return math.floor((TM.db.window.opacity or 1) * 100 + 0.5) end,
         function(v)
@@ -202,7 +206,8 @@ function Settings:Refresh()
 end
 
 function Settings:Open(section)
-    TM.UI:Show()
+    TM.db.window.shown = true
+    TM.UI:GetFrame():Show()          -- settings always use the big window
     TM.UI:ShowSettings(true, section)
 end
 

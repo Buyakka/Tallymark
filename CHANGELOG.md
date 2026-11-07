@@ -20,4 +20,5 @@
 - Gear button now opens settings (it used to lock the window). Minimap right-click opens settings too.
 - Settings now open inside the main window instead of a second window. The gear switches between stats and settings; the tabs become General, Ammo warning, Journey; the footer shows Reset to default and Done. Window size applies when you let go of the slider.
 - Low ammo warning settings: one "Warn me below" amount (100, 200, 1000, anything) used by both warnings. Turn each on or off: on the window (gold card, bell, reminder box) and pop-up alert. Pop-up shows for 1 to 10 seconds (default 3), right away in the upper middle of the screen, also during a fight. Clicks go through it.
-- Background opacity setting (General, 20% to 100%). Lower it to see the game through the window and cards; text, buttons and warnings stay solid.
+- Window opacity setting (General, 20% to 100%). Fades the whole window, text included, so the game shows through.
+- Small window (General > Small window): a small card with steps today, distance today, and for hunters ammo this fight or last fight and arrows or bullets left (gold when low). /tally, /tm and the minimap show or hide it instead of the big window. Drag to move (own position), right-click for settings. Follows lock, size, opacity and hide in combat.

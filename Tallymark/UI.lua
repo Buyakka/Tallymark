@@ -471,6 +471,14 @@ function UI:ShowSettings(on, section)
 
     self.gear.color = on and "accent" or "muted"
     self.gear.icon:SetVertexColor(T():RGB(self.gear.color))
+
+    -- Settings always use the big window. Leaving settings in small window
+    -- mode swaps back to the small window (unless the window is closing).
+    if on then
+        TM.Mini:Hide()
+    elseif TM.db.window.small and not self.closing then
+        self:Show()
+    end
 end
 
 function UI:SelectTab(key)
@@ -675,15 +683,16 @@ function UI:Init()
     combat:RegisterEvent("PLAYER_REGEN_DISABLED")
     combat:RegisterEvent("PLAYER_REGEN_ENABLED")
     combat:SetScript("OnEvent", function(_, event)
-        if not self.frame then return end
+        if not self.frame then self:GetFrame() end
         if event == "PLAYER_REGEN_DISABLED" then
-            if TM.db.window.hideInCombat and self.frame:IsShown() then
+            if TM.db.window.hideInCombat and (self.frame:IsShown() or TM.Mini:IsShown()) then
                 self.hiddenForCombat = true
                 self.frame:Hide()          -- db "shown" stays true on purpose
+                TM.Mini:Hide()
             end
         elseif self.hiddenForCombat then
             self.hiddenForCombat = false
-            if TM.db.window.shown then self.frame:Show() end
+            if TM.db.window.shown then self:Show() end
         end
     end)
 end
@@ -692,6 +701,7 @@ function UI:GetFrame()
     if not self.frame then
         self.frame = Build()
         self:ApplyScale()
+        self:ApplyOpacity()
         self:SelectTab(TM.db.window.tab or DefaultTab())
     end
     return self.frame
@@ -702,21 +712,26 @@ function UI:SetLocked(locked)
     TM.db.window.locked = locked and true or false
 end
 
--- Window size from settings (0.7 to 1.3).
+-- Window size from settings (0.7 to 1.3). Also sizes the small window.
 function UI:ApplyScale()
+    TM.Mini:ApplyLook()
     if not self.frame then return end
     local s = tonumber(TM.db.window.scale) or 1
     s = math.max(0.7, math.min(1.3, s))
     self.frame:SetScale(s)
 end
 
--- Background opacity from settings. Text stays solid.
+-- Window opacity from settings (0.2 to 1). Fades the whole window, text
+-- included, so the game shows through. Also fades the small window.
 function UI:ApplyOpacity()
+    TM.Mini:ApplyLook()
     if not self.frame then return end
-    W.ApplyOpacityTree(self.frame)
+    local o = tonumber(TM.db.window.opacity) or 1
+    self.frame:SetAlpha(math.max(0.2, math.min(1, o)))
 end
 
 function UI:Refresh()
+    TM.Mini:Refresh()
     if not (self.frame and self.frame:IsShown() and self.activeTab) then return end
     if self.settingsOn then return end   -- stats are hidden while settings are open
     local tab = self.activeTab
@@ -727,22 +742,37 @@ function UI:Refresh()
     end
 end
 
+-- Shows the stats: the small window when "Small window" is on, else the big one.
 function UI:Show()
-    self:GetFrame():Show()
     TM.db.window.shown = true
+    if TM.db.window.small then
+        if self.frame and not self.settingsOn then self.frame:Hide() end
+        TM.Mini:Show()
+    else
+        TM.Mini:Hide()
+        self:GetFrame():Show()
+    end
 end
 
 function UI:Hide()
     if self.frame then
         -- Next time the window opens, it opens on the stats, not settings.
+        self.closing = true
         if self.settingsOn then self:ShowSettings(false) end
+        self.closing = false
         self.frame:Hide()
     end
+    TM.Mini:Hide()
     TM.db.window.shown = false
 end
 
+-- Settings > "Small window" changed while settings are open.
+function UI:SetSmall(on)
+    TM.db.window.small = on and true or false
+end
+
 function UI:Toggle()
-    if self.frame and self.frame:IsShown() then
+    if (self.frame and self.frame:IsShown()) or TM.Mini:IsShown() then
         self:Hide()
     else
         self:Show()
