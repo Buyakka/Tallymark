@@ -120,15 +120,13 @@ end
 
 TM.FillDefaults = FillDefaults
 
--- "Name - Realm" and the class file name (for the class color).
+-- The character's name and class file name (for the class color).
 -- Stats are saved per character, so the window shows whose they are.
+-- The realm is left out: on Forever it reads like "CAMWOW US1 Realm 7 PvE",
+-- which means nothing to players.
 function TM:CharName()
     local name = UnitName("player") or "?"
-    local realm = GetRealmName and GetRealmName() or nil
     local _, class = UnitClass("player")
-    if type(realm) == "string" and realm ~= "" then
-        return name .. " - " .. realm, class
-    end
     return name, class
 end
 
