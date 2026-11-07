@@ -218,6 +218,18 @@ local function PrintTest()
     end
     TM:Print("  Ammo count readable: " .. ammoText .. ", type: " .. A:AmmoKind())
 
+    -- Shot list: does every spell ID turn into a name in this game language?
+    local shots = A:ShotListCheck()
+    local found, missing = 0, {}
+    for _, s in ipairs(shots) do
+        if s.name then found = found + 1 else missing[#missing + 1] = s.en .. " (" .. s.id .. ")" end
+    end
+    local shotLine = string.format("%d of %d found", found, #shots)
+    TM:Print("  Shot list: " .. T:Color(#missing == 0 and "accent" or "warning", shotLine))
+    if #missing > 0 then
+        TM:Print("    " .. T:Color("warning", "Not found: " .. table.concat(missing, ", ")))
+    end
+
     TM:Print(T:Color("text", "  Last casts (oldest first)"))
     local list = A:RecentCasts()
     if #list == 0 then TM:Print("    none yet") end
@@ -277,6 +289,13 @@ SlashCmdList["TALLY"] = function(msg)
             or "Minimap button shown.")
     elseif cmd == "test" then
         PrintTest()
+    elseif cmd == "test shots" then
+        -- Every shot ID with the name the game gives it in this language.
+        TM:Print("Shot list (spell ID: name in your game language)")
+        for _, s in ipairs(TM.Arrows:ShotListCheck()) do
+            TM:Print(string.format("  %d: %s", s.id,
+                s.name or TM.Theme:Color("warning", "not found (" .. s.en .. ")")))
+        end
     elseif cmd == "debug journey" then
         TM.Journey:PrintDebug()
     elseif cmd == "debug arrows" or cmd == "debug ammo" then

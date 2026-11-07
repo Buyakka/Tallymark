@@ -14,3 +14,4 @@
 - `/tm` works the same as `/tally`.
 - Window matches the design: rounded corners, gear and close buttons, label next to the big number, bell on the ammo card, "Time to restock." message.
 - "By shot" bars show this fight while in combat, and the last fight after it ends.
+- Shots are found by spell ID, so counting works in every game language, not just English. `/tally test` shows how many shot IDs were found; `/tally test shots` lists each one with its name in your language.

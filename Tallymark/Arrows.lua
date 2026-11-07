@@ -18,22 +18,31 @@ local KEEP_DUNGEONS  = 20
 local KEEP_CASTS     = 10
 local PULL_WINDOW    = 2    -- seconds: a shot right before combat starts counts for that fight
 
--- Shots that may use ammo. English names for now.
--- Some of these may not use ammo in Forever. Step 5's test command checks this.
-local SHOTS = {
-    ["Auto Shot"]          = true,
-    ["Arcane Shot"]        = true,
-    ["Aimed Shot"]         = true,
-    ["Multi-Shot"]         = true,
-    ["Concussive Shot"]    = true,
-    ["Scatter Shot"]       = true,
-    ["Distracting Shot"]   = true,
-    ["Tranquilizing Shot"] = true,
-    ["Serpent Sting"]      = true,
-    ["Viper Sting"]        = true,
-    ["Scorpid Sting"]      = true,
-    ["Wyvern Sting"]       = true,
+-- Shots that may use ammo, by spell ID (rank 1 of each).
+-- The game gives us the name in the player's own language for each ID, so
+-- counting works on German, French, Spanish and other clients too.
+-- All ranks of a spell share the same name, so one ID per spell is enough.
+-- Some of these may not use ammo in Forever. /tally test checks this, and
+-- also checks that every ID below turns into a real spell name.
+local SHOT_IDS = {
+    { id = 75,    en = "Auto Shot" },
+    { id = 3044,  en = "Arcane Shot" },
+    { id = 19434, en = "Aimed Shot" },
+    { id = 2643,  en = "Multi-Shot" },
+    { id = 5116,  en = "Concussive Shot" },
+    { id = 19503, en = "Scatter Shot" },
+    { id = 20736, en = "Distracting Shot" },
+    { id = 19801, en = "Tranquilizing Shot" },
+    { id = 1978,  en = "Serpent Sting" },
+    { id = 3034,  en = "Viper Sting" },
+    { id = 3043,  en = "Scorpid Sting" },
+    { id = 19386, en = "Wyvern Sting" },
 }
+
+-- Name -> true. Filled with the English names now, and with the player's
+-- language names in Arrows:Init (BuildShotNames).
+local SHOTS = {}
+for _, s in ipairs(SHOT_IDS) do SHOTS[s.en] = true end
 local UNKNOWN_SHOT = "Unknown shot"
 
 ---------------------------------------------------------------------------
@@ -396,9 +405,30 @@ end
 
 function Arrows:SpellStats() return spellStats end
 
+-- Looks up each shot's name in the player's language.
+-- Keeps the result per ID so /tally test can show what was found.
+local function BuildShotNames()
+    for _, s in ipairs(SHOT_IDS) do
+        local name = C_Spell and C_Spell.GetSpellName and Safe(C_Spell.GetSpellName, s.id)
+        if type(name) == "string" and not IsSecret(name) and name ~= "" then
+            s.name = name
+            SHOTS[name] = true
+        else
+            s.name = nil
+        end
+    end
+end
+
+-- For /tally test: { id, en, name } for every shot. name is nil if the ID didn't resolve.
+function Arrows:ShotListCheck()
+    if not self.enabled then BuildShotNames() end   -- non-hunters never ran Init's lookup
+    return SHOT_IDS
+end
+
 function Arrows:Init()
     if not self:IsHunter() then return end
     self.enabled = true
+    BuildShotNames()
 
     local f = CreateFrame("Frame")
     f:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
