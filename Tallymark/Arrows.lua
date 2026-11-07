@@ -36,8 +36,11 @@ local SHOT_IDS = {
     { id = 1978,  en = "Serpent Sting" },
     { id = 3034,  en = "Viper Sting" },
     { id = 3043,  en = "Scorpid Sting" },
-    -- Talent. Rank 1 (19386) did not resolve in Forever, so try ranks 2 and 3 too.
-    { id = 19386, en = "Wyvern Sting", alt = { 24132, 24133 } },
+    -- Wyvern Sting (classic IDs 19386, 24132, 24133) is not listed: none of those
+    -- IDs exist in the Forever client (checked in game on 1.60.1 build 70840),
+    -- and guides list it as a classic talent removed in Forever.
+    -- If it comes back, add: { id = 19386, en = "Wyvern Sting", alt = { 24132, 24133 } },
+    -- (alt = other rank IDs to try if the main one isn't found.)
 }
 
 -- Name -> true. Filled with the English names now, and with the player's
