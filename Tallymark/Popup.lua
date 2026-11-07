@@ -18,7 +18,7 @@ local W = TM.W
 local function Build()
     local S = T().sizes
     local f = W.Box(UIParent, "warningBox", "warningBorder", T().radius.card)
-    f:SetSize(330, 40)
+    f:SetSize(330, 40)              -- width is set to fit the message in Popup:Show
     f:SetPoint("TOP", UIParent, "TOP", 0, -180)
     f:SetFrameStrata("HIGH")
 
@@ -54,6 +54,10 @@ function Popup:Show(text)
     local secs = TM.db and TM.db.ammo.popupSeconds or 3
     f.fade:SetStartDelay(math.max(1, math.min(10, secs)))
     f.text:SetText(text)
+    -- Size the box to the message so it is never cut off ("Time to re...").
+    -- 12 + 16 bell + 8 gap on the left, 16 on the right.
+    local w = f.text.GetUnboundedStringWidth and f.text:GetUnboundedStringWidth() or f.text:GetStringWidth()
+    f:SetWidth(math.max(240, math.ceil(w) + 52))
     f:Show()
     f.anim:Play()
 end
