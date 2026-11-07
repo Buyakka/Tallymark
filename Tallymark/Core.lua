@@ -64,6 +64,7 @@ local DB_DEFAULTS = {
     mini = {                    -- small window: own size, opacity and position
         scale    = 1.0,
         opacity  = 1.0,
+        hideInCombat = false,   -- off: the small window stays up during fights
         point    = "RIGHT",
         relPoint = "RIGHT",
         x        = -60,

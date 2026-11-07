@@ -18,7 +18,7 @@ local W = TM.W
 -- the stats themselves are never touched.
 local RESET_KEYS = {
     { "window", "small" }, { "mini", "scale" }, { "mini", "opacity" }, { "window", "locked" }, { "window", "scale" }, { "window", "opacity" },
-    { "window", "hideInCombat" },
+    { "window", "hideInCombat" }, { "mini", "hideInCombat" },
     { "minimap", "hide" },
     { "ammo", "warn" }, { "ammo", "warnAt" },
     { "ammo", "popup" }, { "ammo", "popupSeconds" },
@@ -142,7 +142,7 @@ local function BuildGeneral(page)
             TM.db.window.opacity = v / 100
             TM.UI:ApplyOpacity()
         end))
-    s.Add(W.Checkbox(page, "Hide during combat", "Both windows come back when the fight ends.",
+    s.Add(W.Checkbox(page, "Hide during combat", "Big window only. The small window has its own.",
         function() return TM.db.window.hideInCombat end,
         function(v) TM.db.window.hideInCombat = v end))
 
@@ -191,6 +191,9 @@ local function BuildMini(page)
             TM.db.mini.opacity = v / 100
             TM.Mini:ApplyLook()
         end))
+    s.Add(W.Checkbox(page, "Hide during combat", "Off: it stays up so you can watch the fight live.",
+        function() return TM.db.mini.hideInCombat end,
+        function(v) TM.db.mini.hideInCombat = v end))
     s.Note("While this page is open, the small window shows on screen so you can see your changes.", 16)
 end
 

@@ -721,14 +721,26 @@ function UI:Init()
     combat:SetScript("OnEvent", function(_, event)
         if not self.frame then self:GetFrame() end
         if event == "PLAYER_REGEN_DISABLED" then
-            if TM.db.window.hideInCombat and (self.frame:IsShown() or TM.Mini:IsShown()) then
+            -- Each window has its own choice. By default the small window
+            -- stays up so players can watch their numbers live in the fight.
+            if TM.db.window.hideInCombat and self.frame:IsShown() then
                 self.hiddenForCombat = true
                 HideFrame(self.frame)      -- db "shown" stays true on purpose
+            end
+            if TM.db.mini.hideInCombat and TM.Mini:IsShown() then
+                self.miniHiddenForCombat = true
                 TM.Mini:Hide()
             end
-        elseif self.hiddenForCombat then
-            self.hiddenForCombat = false
-            if TM.db.window.shown then self:Show() end
+        else
+            -- Bring each window back exactly as it was (stats or settings).
+            if self.hiddenForCombat then
+                self.hiddenForCombat = false
+                if TM.db.window.shown then self.frame:Show() end
+            end
+            if self.miniHiddenForCombat then
+                self.miniHiddenForCombat = false
+                if TM.db.window.shown then TM.Mini:Show() end
+            end
         end
     end)
 end

@@ -23,7 +23,7 @@
 ### Windows
 - Full window with Ammo, Journey and History tabs.
 - Small window: a compact card with steps, distance and ammo to keep on screen. Click it for the full window, right-click for settings.
-- Each window has its own size, opacity and position. Lock and hide-during-combat apply to both.
+- Each window has its own size, opacity, position and hide-during-combat choice. The small window stays up in fights unless you turn that on. Lock applies to both.
 
 ### Settings
 - Open from the gear, the minimap right-click, `/tally settings`, or Options > AddOns > Tallymark.
