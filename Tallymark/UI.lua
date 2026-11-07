@@ -423,7 +423,58 @@ local function DefaultTab()
     return (TM.Arrows and TM.Arrows.enabled) and "ammo" or "journey"
 end
 
+-- Shows one settings section (General, Ammo warning, Journey).
+function UI:SelectSettings(key)
+    local sections = TM.Settings.SECTIONS
+    local found = false
+    for _, sec in ipairs(sections) do
+        if sec.key == key then found = true end
+    end
+    if not found then key = sections[1].key end
+    self.settingsTab = key
+    for _, sec in ipairs(sections) do
+        local on = sec.key == key
+        if sec.page then sec.page:SetShown(on) end
+        if sec.button then
+            SetColor(sec.button.text, on and "text" or "muted")
+            sec.button.underline:SetShown(on)
+        end
+    end
+end
+
+function UI:IsSettingsShown()
+    return self.settingsOn == true and self.frame ~= nil and self.frame:IsShown()
+end
+
+-- Switches the window between stats (off) and settings (on).
+function UI:ShowSettings(on, section)
+    self:GetFrame()
+    self.settingsOn = on and true or false
+
+    self.statsBar:SetShown(not on)
+    self.settingsBar:SetShown(on)
+    self.statsFoot:SetShown(not on)
+    self.settingsFoot:SetShown(on)
+
+    if on then
+        for _, tab in ipairs(TABS) do
+            if tab.page then tab.page:Hide() end
+        end
+        TM.Settings:Refresh()
+        self:SelectSettings(section or self.settingsTab or "general")
+    else
+        for _, sec in ipairs(TM.Settings.SECTIONS) do
+            if sec.page then sec.page:Hide() end
+        end
+        self:SelectTab(TM.db.window.tab or DefaultTab())
+    end
+
+    self.gear.color = on and "accent" or "muted"
+    self.gear.icon:SetVertexColor(T():RGB(self.gear.color))
+end
+
 function UI:SelectTab(key)
+    if self.settingsOn then return end   -- stats tabs are hidden in settings mode
     local chosen
     for _, tab in ipairs(TABS) do
         if tab.key == key and TabAllowed(tab) then chosen = tab end
@@ -485,24 +536,35 @@ local function Build()
     close:SetPoint("TOPRIGHT", -S.padding, -S.padding + 2)
     close:SetScript("OnClick", function() UI:Hide() end)
 
-    -- Gear: opens the settings window.
+    -- Gear: switches this window between stats and settings.
     local gear = IconButton(f, T().textures.gear, function()
+        if UI:IsSettingsShown() then
+            return { "Back to stats", "Your settings are already saved." }
+        end
         return { "Settings", "Window size, lock, ammo warning, miles or km, and more." }
     end)
     gear:SetPoint("RIGHT", close, "LEFT", -6, 0)
-    gear:SetScript("OnClick", function() TM.Settings:Toggle() end)
+    gear:SetScript("OnClick", function(self)
+        TM.Settings:Toggle()
+        self:GetScript("OnEnter")(self)   -- refresh the tooltip text
+    end)
     UI.gear = gear
 
-    -- Tabs
-    local x = S.padding
-    for _, tab in ipairs(TABS) do
-        if TabAllowed(tab) then
-            local btn = CreateFrame("Button", nil, f)
+    -- Two tab rows in the same place: stats tabs and settings tabs.
+    -- isActive(item) tells which button is underlined.
+    local function TabRow(items, onClick, isActive)
+        local row = CreateFrame("Frame", nil, f)
+        row:SetPoint("TOPLEFT", 0, -S.headerHeight)
+        row:SetPoint("RIGHT")
+        row:SetHeight(S.tabHeight)
+        local x = S.padding
+        for _, item in ipairs(items) do
+            local btn = CreateFrame("Button", nil, row)
             btn.text = Text(btn, "bodyBold", S.tabText, "muted", "CENTER")
             btn.text:SetPoint("CENTER", 0, 2)
-            btn.text:SetText(tab.label)
+            btn.text:SetText(item.label)
             btn:SetSize(btn.text:GetStringWidth() + 20, S.tabHeight)
-            btn:SetPoint("TOPLEFT", x, -S.headerHeight)
+            btn:SetPoint("TOPLEFT", x, 0)
             x = x + btn:GetWidth() + S.gap
 
             btn.underline = Solid(btn, "accent")
@@ -510,14 +572,26 @@ local function Build()
             btn.underline:SetPoint("BOTTOMLEFT", 0, 0)
             btn.underline:SetPoint("BOTTOMRIGHT", 0, 0)
 
-            btn:SetScript("OnClick", function() UI:SelectTab(tab.key) end)
+            btn:SetScript("OnClick", function() onClick(item.key) end)
             btn:SetScript("OnEnter", function(self) SetColor(self.text, "text") end)
             btn:SetScript("OnLeave", function()
-                SetColor(btn.text, UI.activeTab == tab and "text" or "muted")
+                SetColor(btn.text, isActive(item) and "text" or "muted")
             end)
-            tab.button = btn
+            item.button = btn
         end
+        return row
     end
+
+    local statTabs = {}
+    for _, tab in ipairs(TABS) do
+        if TabAllowed(tab) then statTabs[#statTabs + 1] = tab end
+    end
+    UI.statsBar = TabRow(statTabs, function(key) UI:SelectTab(key) end,
+        function(item) return UI.activeTab == item end)
+    UI.settingsBar = TabRow(TM.Settings.SECTIONS, function(key) UI:SelectSettings(key) end,
+        function(item) return UI.settingsTab == item.key end)
+    UI.settingsBar:Hide()
+
     local tabLine = Divider(f)
     tabLine:SetPoint("TOPLEFT", 0, -(S.headerHeight + S.tabHeight))
     tabLine:SetPoint("TOPRIGHT", 0, -(S.headerHeight + S.tabHeight))
@@ -536,19 +610,39 @@ local function Build()
             tab.page = page
         end
     end
+    TM.Settings:BuildPages(content)   -- settings pages share the same content area
 
-    -- Footer
+    -- Footer: version and author for stats, Reset and Done for settings.
     local footLine = Divider(f)
     footLine:SetPoint("BOTTOMLEFT", 0, S.footerHeight)
     footLine:SetPoint("BOTTOMRIGHT", 0, S.footerHeight)
 
-    local version = Text(f, "body", S.footerText, "footer")
-    version:SetPoint("BOTTOMLEFT", S.padding, 14)
+    local statsFoot = CreateFrame("Frame", nil, f)
+    statsFoot:SetPoint("BOTTOMLEFT")
+    statsFoot:SetPoint("BOTTOMRIGHT")
+    statsFoot:SetHeight(S.footerHeight)
+    local version = Text(statsFoot, "body", S.footerText, "footer")
+    version:SetPoint("LEFT", S.padding, 0)
     version:SetText("Tallymark v" .. TM.VERSION)
-
-    local author = Text(f, "body", S.footerText, "footer", "RIGHT")
-    author:SetPoint("BOTTOMRIGHT", -S.padding, 14)
+    local author = Text(statsFoot, "body", S.footerText, "footer", "RIGHT")
+    author:SetPoint("RIGHT", -S.padding, 0)
     author:SetText("by Buyaka")
+    UI.statsFoot = statsFoot
+
+    local settingsFoot = CreateFrame("Frame", nil, f)
+    settingsFoot:SetPoint("BOTTOMLEFT")
+    settingsFoot:SetPoint("BOTTOMRIGHT")
+    settingsFoot:SetHeight(S.footerHeight)
+    local reset = TM.W.TextButton(settingsFoot, "Reset to default")
+    reset:SetHeight(28)
+    reset:SetPoint("LEFT", S.padding, 0)
+    reset:SetScript("OnClick", function() TM.Settings.ResetToDefault() end)
+    local done = TM.W.TextButton(settingsFoot, "Done", true)
+    done:SetHeight(28)
+    done:SetPoint("RIGHT", -S.padding, 0)
+    done:SetScript("OnClick", function() UI:ShowSettings(false) end)
+    settingsFoot:Hide()
+    UI.settingsFoot = settingsFoot
 
     -- Tick once per second while open (combat timer, journey numbers).
     f:SetScript("OnShow", function()
@@ -618,6 +712,7 @@ end
 
 function UI:Refresh()
     if not (self.frame and self.frame:IsShown() and self.activeTab) then return end
+    if self.settingsOn then return end   -- stats are hidden while settings are open
     local tab = self.activeTab
     local ok, err = pcall(tab.refresh, tab.page)
     if not ok and not self.warned then
@@ -633,6 +728,8 @@ end
 
 function UI:Hide()
     if self.frame then
+        -- Next time the window opens, it opens on the stats, not settings.
+        if self.settingsOn then self:ShowSettings(false) end
         self.frame:Hide()
     end
     TM.db.window.shown = false

@@ -1,6 +1,8 @@
 -- Settings.lua
--- The settings window (opened by the gear, the minimap right-click, or
--- Options > AddOns > Tallymark). Changes apply right away.
+-- Settings live inside the main Tallymark window: the gear switches the
+-- window to settings mode (see UI:ShowSettings). Also opened by the minimap
+-- right-click, /tally settings, and Options > AddOns > Tallymark.
+-- Changes apply right away.
 -- Sections: General, Ammo warning, Journey. Appearance (styles, colors)
 -- and History come in later versions.
 
@@ -11,9 +13,6 @@ TM.Settings = Settings
 
 local function T() return TM.Theme end
 local W = TM.W
-
-local WIDTH, HEIGHT = 580, 480
-local NAV_WIDTH = 170
 
 -- Settings that "Reset to default" puts back. Window position, open tab and
 -- the stats themselves are never touched.
@@ -92,13 +91,13 @@ local function BuildGeneral(page)
     s.Add(W.Checkbox(page, "Lock window position", "Stops the window from being dragged by accident.",
         function() return TM.db.window.locked end,
         function(v) TM.UI:SetLocked(v) end))
-    s.Add(W.Slider(page, "Window size", nil, 70, 130, 5,
+    -- The size is applied when the mouse is let go. Resizing while dragging would
+    -- move the slider under the mouse, since the slider is inside this window.
+    local size = s.Add(W.Slider(page, "Window size", "Applies when you let go of the slider.", 70, 130, 5,
         function(v) return string.format("%d%%", v) end,
         function() return math.floor((TM.db.window.scale or 1) * 100 + 0.5) end,
-        function(v)
-            TM.db.window.scale = v / 100
-            TM.UI:ApplyScale()
-        end))
+        function(v) TM.db.window.scale = v / 100 end))
+    size.slider:HookScript("OnMouseUp", function() TM.UI:ApplyScale() end)
     s.Add(W.Checkbox(page, "Hide the window during combat", "It comes back by itself when the fight ends.",
         function() return TM.db.window.hideInCombat end,
         function(v) TM.db.window.hideInCombat = v end))
@@ -161,125 +160,42 @@ local SECTIONS = {
     { key = "journey", label = "Journey",      build = BuildJourney },
 }
 
+Settings.SECTIONS = SECTIONS
+Settings.ResetToDefault = ResetToDefault
+
 ---------------------------------------------------------------------------
--- Window
+-- Hooks for the main window
 ---------------------------------------------------------------------------
 
-function Settings:Select(key)
+-- Builds one page per section inside parent (the main window's content area).
+-- Each section gets .page. The window makes the tab buttons.
+function Settings:BuildPages(parent)
+    self.controls = {}
     for _, sec in ipairs(SECTIONS) do
-        local on = sec.key == key
-        sec.page:SetShown(on)
-        W.SetColor(sec.button.text, on and "text" or "muted")
-        sec.button.bar:SetShown(on)
-        W.SetBoxColors(sec.button.bg, on and "cardBg" or "windowBg", on and "cardBg" or "windowBg")
-    end
-    self.current = key
-end
-
-local function Build()
-    local S = T().sizes
-    Settings.controls = {}
-
-    local f = W.Box(UIParent, "windowBg", "border", T().radius.window)
-    f:SetSize(WIDTH, HEIGHT)
-    f:SetPoint("CENTER")
-    f:SetFrameStrata("DIALOG")
-    f:SetClampedToScreen(true)
-    f:SetMovable(true)
-    f:EnableMouse(true)
-    f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", f.StopMovingOrSizing)
-
-    -- Header
-    local logo = f:CreateTexture(nil, "ARTWORK")
-    logo:SetTexture(T().textures.logo)
-    logo:SetSize(24, 24)
-    logo:SetPoint("TOPLEFT", S.padding, -S.padding)
-    local title = W.Text(f, "display", 16, "text")
-    title:SetPoint("LEFT", logo, "RIGHT", 8, 0)
-    title:SetText("Tallymark Settings")
-
-    local close = W.IconButton(f, T().textures.close)
-    close:SetPoint("TOPRIGHT", -S.padding, -12)
-    close:SetScript("OnClick", function() f:Hide() end)
-
-    local headLine = W.Divider(f)
-    headLine:SetPoint("TOPLEFT", 0, -56)
-    headLine:SetPoint("TOPRIGHT", 0, -56)
-
-    -- Left navigation
-    local navLine = W.Solid(f, "border", "BORDER")
-    navLine:SetWidth(S.borderSize)
-    navLine:SetPoint("TOPLEFT", NAV_WIDTH, -56)
-    navLine:SetPoint("BOTTOMLEFT", NAV_WIDTH, 56)
-
-    local content = CreateFrame("Frame", nil, f)
-    content:SetPoint("TOPLEFT", NAV_WIDTH + 24, -56 - 20)
-    content:SetPoint("BOTTOMRIGHT", -24, 56 + 12)
-
-    for i, sec in ipairs(SECTIONS) do
-        local b = CreateFrame("Button", nil, f)
-        b:SetSize(NAV_WIDTH - 24, 34)
-        b:SetPoint("TOPLEFT", 12, -56 - 12 - (i - 1) * 38)
-        b.bg = W.Box(b, "windowBg", "windowBg", T().radius.button)
-        b.bg:SetAllPoints()
-        b.bg:SetFrameLevel(b:GetFrameLevel())
-        b.bar = W.Solid(b.bg, "accent", "OVERLAY")
-        b.bar:SetSize(3, 20)
-        b.bar:SetPoint("LEFT", 0, 0)
-        b.text = W.Text(b.bg, "bodyBold", S.bodyText, "muted")
-        b.text:SetPoint("LEFT", 14, 0)
-        b.text:SetText(sec.label)
-        b:SetScript("OnClick", function() Settings:Select(sec.key) end)
-        b:SetScript("OnEnter", function() W.SetColor(b.text, "text") end)
-        b:SetScript("OnLeave", function()
-            W.SetColor(b.text, Settings.current == sec.key and "text" or "muted")
-        end)
-        sec.button = b
-
-        local page = CreateFrame("Frame", nil, content)
+        local page = CreateFrame("Frame", nil, parent)
         page:SetAllPoints()
         page:Hide()
         sec.build(page)
         sec.page = page
     end
-
-    -- Footer
-    local footLine = W.Divider(f)
-    footLine:SetPoint("BOTTOMLEFT", 0, 56)
-    footLine:SetPoint("BOTTOMRIGHT", 0, 56)
-
-    local version = W.Text(f, "body", S.footerText, "footer")
-    version:SetPoint("BOTTOMLEFT", S.padding, 22)
-    version:SetText("Tallymark v" .. TM.VERSION .. " beta · by Buyaka")
-
-    local reset = W.TextButton(f, "Reset to default")
-    reset:SetPoint("BOTTOMRIGHT", -S.padding, 12)
-    reset:SetScript("OnClick", ResetToDefault)
-
-    f:SetScript("OnShow", RefreshAll)
-    f:Hide()
-    return f
 end
 
-function Settings:GetFrame()
-    if not self.frame then
-        self.frame = Build()
-        self:Select("general")
-    end
-    return self.frame
-end
-
-function Settings:Toggle()
-    local f = self:GetFrame()
-    f:SetShown(not f:IsShown())
+-- Re-read every control (called when settings open).
+function Settings:Refresh()
+    RefreshAll()
 end
 
 function Settings:Open(section)
-    local f = self:GetFrame()
-    if section then self:Select(section) end
-    f:Show()
+    TM.UI:Show()
+    TM.UI:ShowSettings(true, section)
+end
+
+function Settings:Toggle()
+    if TM.UI:IsSettingsShown() then
+        TM.UI:ShowSettings(false)
+    else
+        self:Open()
+    end
 end
 
 ---------------------------------------------------------------------------

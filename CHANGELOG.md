@@ -18,3 +18,4 @@
 - Settings window. Opens from the gear, minimap right-click, `/tally settings`, or Options > AddOns > Tallymark. General: lock window, window size (70%-130%), hide during combat, show minimap button. Ammo warning: on/off, warn below N (default 200), pop-up alert, test button. Journey: miles or kilometers, step length. Reset to default.
 - Low ammo pop-up: a gold alert near the top of the screen when ammo drops below the warning amount, and once after login if already low. Fades out after a few seconds.
 - Gear button now opens settings (it used to lock the window). Minimap right-click opens settings too.
+- Settings now open inside the main window instead of a second window. The gear switches between stats and settings; the tabs become General, Ammo warning, Journey; the footer shows Reset to default and Done. Window size applies when you let go of the slider.
