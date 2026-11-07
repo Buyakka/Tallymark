@@ -28,6 +28,7 @@
 ### Settings
 - Open from the gear, the minimap right-click, `/tally settings`, or Options > AddOns > Tallymark.
 - Tabs: General, Small window, Ammo, Journey. Reset to default.
+- Done or the gear goes back to the main window. The X or Escape closes it (back to the small window if you use it).
 
 ### Other
 - Minimap button with quick stats on hover.

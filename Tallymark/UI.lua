@@ -55,6 +55,14 @@ local function ApplyPosition(frame)
     frame:SetPoint(w.point or "CENTER", UIParent, w.relPoint or "CENTER", w.x or 0, w.y or 0)
 end
 
+-- Hides the big window from our own code. A hide that doesn't come from here
+-- (the Escape key) is treated like clicking the X, see UI:ClosedByGame.
+local function HideFrame(frame)
+    UI.internalHide = true
+    frame:Hide()
+    UI.internalHide = false
+end
+
 ---------------------------------------------------------------------------
 -- Shared pieces: cards and bar rows
 ---------------------------------------------------------------------------
@@ -487,8 +495,8 @@ function UI:ShowSettings(on, section, toStats)
     self.gear.icon:SetVertexColor(T():RGB(self.gear.color))
 
     -- Settings always use the big window. Leaving settings in small window
-    -- mode (Done, X, minimap) swaps back to the small window. The gear goes
-    -- to the big window's stats instead.
+    -- mode (X, Escape, minimap) swaps back to the small window. Done and the
+    -- gear go to the big window's stats instead.
     if not on and TM.db.window.small and not self.closing then
         if toStats then
             TM.Mini:Hide()
@@ -527,6 +535,9 @@ local function Build()
     local S = T().sizes
 
     local f = Box(UIParent, "windowBg", "border", T().radius.window)
+    -- A global name so the Escape key can close it, like the game's own windows.
+    _G.TallymarkWindow = f
+    tinsert(UISpecialFrames, "TallymarkWindow")
     f:SetSize(S.windowWidth, S.windowHeight)
     f:SetFrameStrata("MEDIUM")
     f:SetClampedToScreen(true)
@@ -556,7 +567,7 @@ local function Build()
     tagline:SetText("EVERY STEP. EVERY SHOT.")
 
     local close = IconButton(f, T().textures.close, function()
-        return { "Close", "Type /tm or click the minimap button to open again." }
+        return { "Close (Esc)", "Type /tm or click the minimap button to open again." }
     end)
     close:SetPoint("TOPRIGHT", -S.padding, -S.padding + 2)
     close:SetScript("OnClick", function() UI:Hide() end)
@@ -665,7 +676,7 @@ local function Build()
     local done = TM.W.TextButton(settingsFoot, "Done", true)
     done:SetHeight(28)
     done:SetPoint("RIGHT", -S.padding, 0)
-    done:SetScript("OnClick", function() UI:ShowSettings(false) end)
+    done:SetScript("OnClick", function() UI:ShowSettings(false, nil, true) end)   -- back to stats
     settingsFoot:Hide()
     UI.settingsFoot = settingsFoot
 
@@ -678,10 +689,13 @@ local function Build()
     f:SetScript("OnHide", function()
         if UI.ticker then UI.ticker:Cancel() end
         UI.ticker = nil
+        -- Only a real close (Escape). When the whole UI hides (Alt+Z, loading
+        -- screens) the window is still "shown" and comes back by itself.
+        if not UI.internalHide and not f:IsShown() then UI:ClosedByGame() end
     end)
 
     ApplyPosition(f)
-    f:Hide()
+    HideFrame(f)
     return f
 end
 
@@ -704,7 +718,7 @@ function UI:Init()
         if event == "PLAYER_REGEN_DISABLED" then
             if TM.db.window.hideInCombat and (self.frame:IsShown() or TM.Mini:IsShown()) then
                 self.hiddenForCombat = true
-                self.frame:Hide()          -- db "shown" stays true on purpose
+                HideFrame(self.frame)      -- db "shown" stays true on purpose
                 TM.Mini:Hide()
             end
         elseif self.hiddenForCombat then
@@ -763,7 +777,7 @@ end
 function UI:Show()
     TM.db.window.shown = true
     if TM.db.window.small then
-        if self.frame and not self.settingsOn then self.frame:Hide() end
+        if self.frame and not self.settingsOn then HideFrame(self.frame) end
         TM.Mini:Show()
     else
         TM.Mini:Hide()
@@ -778,7 +792,7 @@ function UI:Hide()
         self.closing = true
         if self.settingsOn then self:ShowSettings(false) end
         self.closing = false
-        self.frame:Hide()
+        HideFrame(self.frame)
         TM.Mini:Show()
         TM.db.window.shown = true
         return
@@ -788,10 +802,25 @@ function UI:Hide()
         self.closing = true
         if self.settingsOn then self:ShowSettings(false) end
         self.closing = false
-        self.frame:Hide()
+        HideFrame(self.frame)
     end
     TM.Mini:Hide()
     TM.db.window.shown = false
+end
+
+-- The game closed the window (Escape). Same result as clicking the X: leave
+-- settings, then show the small window if it is on, else stay closed.
+function UI:ClosedByGame()
+    self.closing = true
+    if self.settingsOn then self:ShowSettings(false) end
+    self.closing = false
+    if TM.db.window.small then
+        TM.Mini:Show()
+        TM.db.window.shown = true
+    else
+        TM.Mini:Hide()
+        TM.db.window.shown = false
+    end
 end
 
 -- Opens the big window on its stats (Ammo, Journey, History), also when the
