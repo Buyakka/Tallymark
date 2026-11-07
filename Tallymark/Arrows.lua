@@ -36,7 +36,8 @@ local SHOT_IDS = {
     { id = 1978,  en = "Serpent Sting" },
     { id = 3034,  en = "Viper Sting" },
     { id = 3043,  en = "Scorpid Sting" },
-    { id = 19386, en = "Wyvern Sting" },
+    -- Talent. Rank 1 (19386) did not resolve in Forever, so try ranks 2 and 3 too.
+    { id = 19386, en = "Wyvern Sting", alt = { 24132, 24133 } },
 }
 
 -- Name -> true. Filled with the English names now, and with the player's
@@ -408,13 +409,22 @@ function Arrows:SpellStats() return spellStats end
 -- Looks up each shot's name in the player's language.
 -- Keeps the result per ID so /tally test can show what was found.
 local function BuildShotNames()
+    local function Lookup(id)
+        local name = C_Spell and C_Spell.GetSpellName and Safe(C_Spell.GetSpellName, id)
+        if type(name) == "string" and not IsSecret(name) and name ~= "" then return name end
+    end
     for _, s in ipairs(SHOT_IDS) do
-        local name = C_Spell and C_Spell.GetSpellName and Safe(C_Spell.GetSpellName, s.id)
-        if type(name) == "string" and not IsSecret(name) and name ~= "" then
-            s.name = name
-            SHOTS[name] = true
-        else
-            s.name = nil
+        s.name, s.usedId = nil, nil
+        -- Try the main ID, then any other ranks listed in alt.
+        local ids = { s.id }
+        for _, a in ipairs(s.alt or {}) do ids[#ids + 1] = a end
+        for _, id in ipairs(ids) do
+            local name = Lookup(id)
+            if name then
+                s.name, s.usedId = name, id
+                SHOTS[name] = true
+                break
+            end
         end
     end
 end

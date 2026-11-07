@@ -293,8 +293,11 @@ SlashCmdList["TALLY"] = function(msg)
         -- Every shot ID with the name the game gives it in this language.
         TM:Print("Shot list (spell ID: name in your game language)")
         for _, s in ipairs(TM.Arrows:ShotListCheck()) do
-            TM:Print(string.format("  %d: %s", s.id,
-                s.name or TM.Theme:Color("warning", "not found (" .. s.en .. ")")))
+            local ids = tostring(s.id)
+            for _, a in ipairs(s.alt or {}) do ids = ids .. "/" .. a end
+            local text = s.name and (s.name .. (s.usedId ~= s.id and (" (found with " .. s.usedId .. ")") or ""))
+                or TM.Theme:Color("warning", "not found (" .. s.en .. ")")
+            TM:Print(string.format("  %s: %s", ids, text))
         end
     elseif cmd == "debug journey" then
         TM.Journey:PrintDebug()
