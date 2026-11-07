@@ -121,6 +121,7 @@ local COMMANDS = {
     { "/tally status", "Show version and saved settings." },
     { "/tally reset",  "Move the window back to the center." },
     { "/tally debug journey", "Show the last moves and your journey totals." },
+    { "/tally debug arrows",  "Hunters: show ammo, fights and the last shots." },
 }
 
 local function PrintHelp()
@@ -155,6 +156,8 @@ SlashCmdList["TALLY"] = function(msg)
         TM:Print("Window moved to the center.")
     elseif cmd == "debug journey" then
         TM.Journey:PrintDebug()
+    elseif cmd == "debug arrows" or cmd == "debug ammo" then
+        TM.Arrows:PrintDebug()
     else
         TM:Print("Unknown command. Type /tally help")
     end
@@ -175,6 +178,7 @@ events:SetScript("OnEvent", function(self, event, arg1)
     elseif event == "PLAYER_LOGIN" then
         if not TM.db then return end
         TM.Journey:Init()
+        TM.Arrows:Init()
         TM.UI:Init()
         TM:Print("v" .. TM.VERSION .. " loaded. Type /tally help")
         self:UnregisterEvent("PLAYER_LOGIN")

@@ -24,6 +24,17 @@
         "UnitOnTaxi",
         "UnitIsDeadOrGhost",
         "IsSwimming",
-        "IsMounted"
+        "IsMounted",
+        "GetInventoryItemID",
+        "GetInventoryItemCount",
+        "GetInstanceInfo",
+        "GetRealZoneText",
+        "GetSubZoneText",
+        "IsInInstance",
+        "UnitClassBase",
+        "UnitAffectingCombat",
+        "INVSLOT_AMMO",
+        "INVSLOT_RANGED",
+        "wipe"
     ]
 }
