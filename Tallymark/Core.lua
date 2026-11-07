@@ -44,6 +44,7 @@ local DB_DEFAULTS = {
     units = "miles",            -- "miles" or "km"
     window = {
         shown    = false,
+        locked   = false,
         point    = "CENTER",
         relPoint = "CENTER",
         x        = 0,

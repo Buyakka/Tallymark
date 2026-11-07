@@ -249,6 +249,7 @@ local function StartFight()
         zone      = zone,
         subzone   = subzone,
         continent = continent,
+        kind      = ReadAmmoKind(),
         shots     = 0,
         byShot    = {},
         startAmmo = (state == "yes") and n or nil,
@@ -293,6 +294,7 @@ local function EndFight()
             zone      = fight.zone,
             subzone   = fight.subzone,
             continent = fight.continent,
+            kind      = fight.kind,
             duration  = math.floor(GetTime() - fight.started + 0.5),
             shots     = fight.shots,
             byShot    = fight.byShot,
@@ -342,11 +344,23 @@ function Arrows:IsHunter()
 end
 
 -- "arrows" or "bullets", for labels. Pass a count to get "1 bullet" right.
-function Arrows:AmmoWord(count)
-    local word = ReadAmmoKind() == "bullet" and "bullet" or "arrow"
+-- Pass a kind ("arrow"/"bullet") to use a saved fight's ammo instead of what is equipped now.
+function Arrows:AmmoWord(count, kind)
+    kind = kind or ReadAmmoKind()
+    local word = kind == "bullet" and "bullet" or "arrow"
     if count == 1 then return word end
     return word .. "s"
 end
+
+-- Read-only helpers for the window.
+function Arrows:Data() return Data() end
+function Arrows:CurrentFight() return fight end
+function Arrows:LastFight()
+    local list = Data().fights
+    return list[#list]
+end
+-- Returns value, state ("yes", "secret", "none").
+function Arrows:AmmoCount() return ReadAmmoCount() end
 
 function Arrows:Init()
     if not self:IsHunter() then return end
@@ -381,6 +395,8 @@ function Arrows:Init()
         else
             UpdateAmmo()
         end
+        -- Let the window update its numbers (it does nothing while hidden).
+        if TM.UI and TM.UI.Refresh then TM.UI:Refresh() end
     end)
 
     -- Logged in or reloaded mid-fight.
@@ -449,7 +465,7 @@ function Arrows:PrintDebug()
             end
         end
         TM:Print(string.format("  %s · fight %d  %d %s · %s%s",
-            self:FullPlace(f), f.n, f.shots, self:AmmoWord(f.shots), FormatTime(f.duration), check))
+            self:FullPlace(f), f.n, f.shots, self:AmmoWord(f.shots, f.kind), FormatTime(f.duration), check))
     end
 
     TM:Print(T:Color("text", "Last casts (oldest first)"))

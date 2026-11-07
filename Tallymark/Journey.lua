@@ -149,6 +149,13 @@ end
 -- Public
 ---------------------------------------------------------------------------
 
+-- Read-only helpers for the window.
+function Journey:Data()
+    CheckNewDay()
+    return Data()
+end
+function Journey:Session() return session end
+
 function Journey:TotalYards()
     local total = 0
     for _, v in pairs(Data().yards) do total = total + v end
