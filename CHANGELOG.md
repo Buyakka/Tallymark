@@ -1,26 +1,35 @@
 # Changelog
 
-## 0.1.0 (in progress, Beta)
+## 0.1.0 (Beta) - first release
 
-- Step 1: addon skeleton. Loads, saves settings (schema 1), `/tally` toggles an empty window, `/tally help` lists commands.
-- Step 2: journey tracking. Distance by travel type (on foot, mounted, flight paths, swimming, ghost), estimated steps (lifetime, today, this session). Skips teleports, zoning and places where position is hidden. `/tally debug journey` shows the last moves and totals.
-- Step 3: arrow and bullet tracking for hunters. Counts shots live per fight, per dungeon and lifetime, split by arrows and bullets, with a per-shot breakdown. Reads ammo left and checks it against the shot count after each fight. Keeps the last 50 fights. `/tally debug arrows` shows it all.
-- Step 4: the Shadow window. Tabs for Ammo (hunters), Journey and History. Big live number, Dungeon, Lifetime and Bullets/Arrows left cards, low ammo box (under 200), bars by shot and by travel type, recent fights list, lock button.
-- Step 5: `/tally test`. Shows client build, whether position and ammo can be read here, the last 10 casts with how much ammo went down after each, and which spells used ammo this session (flags any that disagree with the shot list).
-- Fonts: Space Grotesk Bold for the name and big numbers, Inter for everything else (SIL Open Font License, included in Media/Fonts). Falls back to the game font if a file fails to load.
-- License: All Rights Reserved (LICENSE file, README notice, TOC X-License line, LICENSE.txt shipped inside the addon folder).
-- Seal logo (ring, arrowhead with tally marks) replaces the placeholder.
-- Minimap button in the standard gold ring, with the seal arrowhead. Left-click shows or hides the window, right-click locks it, drag to move, hover for steps today and ammo left. `/tally minimap` hides or shows it.
-- `/tm` works the same as `/tally`.
-- Window matches the design: rounded corners, gear and close buttons, label next to the big number, bell on the ammo card, "Time to restock." message.
-- "By shot" bars show this fight while in combat, and the last fight after it ends.
-- Shots are found by spell ID, so counting works in every game language, not just English. `/tally test` shows how many shot IDs were found; `/tally test shots` lists each one with its name in your language.
-- Settings window. Opens from the gear, minimap right-click, `/tally settings`, or Options > AddOns > Tallymark. General: lock window, window size (70%-130%), hide during combat, show minimap button. Ammo warning: on/off, warn below N (default 200), pop-up alert, test button. Journey: miles or kilometers, step length. Reset to default.
-- Low ammo pop-up: a gold alert near the top of the screen when ammo drops below the warning amount, and once after login if already low. Fades out after a few seconds.
-- Gear button now opens settings (it used to lock the window). Minimap right-click opens settings too.
-- Settings now open inside the main window instead of a second window. The gear switches between stats and settings; the tabs become General, Ammo warning, Journey; the footer shows Reset to default and Done. Window size applies when you let go of the slider.
-- Low ammo warning settings: one "Warn me below" amount (100, 200, 1000, anything) used by both warnings. Turn each on or off: on the window (gold card, bell, reminder box) and pop-up alert. Pop-up shows for 1 to 10 seconds (default 3), right away in the upper middle of the screen, also during a fight. Clicks go through it.
-- Window opacity setting (General, 20% to 100%). Fades the whole window, text included, so the game shows through.
-- Small window (General > Small window): a small card with steps today, distance today, and for hunters ammo this fight or last fight and arrows or bullets left (gold when low). /tally, /tm and the minimap show or hide it instead of the big window. Drag to move (own position), right-click for settings. Follows lock, size, opacity and hide in combat.
-- Small window has its own settings tab with its own size and opacity, separate from the big window. While that tab is open, the small window shows on screen as a live preview. Leaving settings any way (Done, gear, X, minimap) brings the small window back when it is on. "Ammo warning" tab renamed "Ammo" to fit the new tab.
-- With the small window on: click it to open the full window (Ammo, Journey, History); the gear in settings goes back to the full window's stats; closing the full window (X, Done, minimap) goes back to the small window.
+### Journey
+- Distance traveled and estimated steps, for today, this session and lifetime.
+- Distance split by how you moved: on foot, mounted, flight paths, swimming and as a ghost.
+- Teleports, hearthstones, zoning and places where your position is hidden are skipped.
+- Miles or kilometers, and an adjustable step length.
+
+### Ammo (hunters)
+- Arrows and bullets used per fight, per dungeon run and lifetime, with a breakdown by shot.
+- Shows your arrows or bullets left. Labels follow what you have equipped.
+- Shots are found by spell ID, so counting works in every game language.
+- Keeps your last 50 fights (place, shots, time) and last 20 dungeon runs.
+
+### Low ammo warning
+- One "Warn me below" amount (default 200).
+- On the window: the ammo card turns gold, with a bell and a "Time to restock" box.
+- Pop-up alert in the middle of the screen, also during a fight. Stays 1 to 10 seconds (default 3). Clicks go through it.
+- Each warning can be turned on or off.
+
+### Windows
+- Full window with Ammo, Journey and History tabs.
+- Small window: a compact card with steps, distance and ammo to keep on screen. Click it for the full window, right-click for settings.
+- Each window has its own size, opacity and position. Lock and hide-during-combat apply to both.
+
+### Settings
+- Open from the gear, the minimap right-click, `/tally settings`, or Options > AddOns > Tallymark.
+- Tabs: General, Small window, Ammo, Journey. Reset to default.
+
+### Other
+- Minimap button with quick stats on hover.
+- `/tally` and `/tm` commands. `/tally help` lists them all.
+- `/tally test` checks what Tallymark can read where you are.

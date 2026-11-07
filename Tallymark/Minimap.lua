@@ -1,6 +1,6 @@
 -- Minimap.lua
 -- Round button on the minimap edge with the seal logo.
--- Left-click: show or hide the window. Right-click: lock or unlock it.
+-- Left-click: show or hide the window. Right-click: settings.
 -- Drag: move the button around the minimap. Hover: quick stats.
 
 local ADDON, TM = ...

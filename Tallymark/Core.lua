@@ -168,10 +168,11 @@ local COMMANDS = {
     { "/tally  or  /tm", "Show or hide the Tallymark window." },
     { "/tally minimap", "Show or hide the minimap button." },
     { "/tally help",   "List all commands." },
-    { "/tally settings", "Open the settings window (or click the gear)." },
+    { "/tally settings", "Open settings (or click the gear)." },
     { "/tally status", "Show version and saved settings." },
-    { "/tally reset",  "Move the window back to the center." },
+    { "/tally reset",  "Move both windows back to where they started." },
     { "/tally test",   "Check what Tallymark can read here (try in and out of combat)." },
+    { "/tally test shots", "List every tracked shot with its name in your game language." },
     { "/tally debug journey", "Show the last moves and your journey totals." },
     { "/tally debug arrows",  "Hunters: show ammo, fights and the last shots." },
 }
@@ -319,7 +320,7 @@ SlashCmdList["TALLY"] = function(msg)
         PrintStatus()
     elseif cmd == "reset" then
         TM.UI:ResetPosition()
-        TM:Print("Window moved to the center.")
+        TM:Print("Windows moved back to where they started.")
     elseif cmd == "settings" or cmd == "options" or cmd == "config" then
         TM.Settings:Open()
     elseif cmd == "minimap" then

@@ -171,6 +171,12 @@ function Mini:ApplyLook()
     self.frame:SetAlpha(math.max(0.2, math.min(1, tonumber(w.opacity) or 1)))
 end
 
+function Mini:ResetPosition()
+    local m, D = TM.db.mini, TM.DB_DEFAULTS.mini
+    m.point, m.relPoint, m.x, m.y = D.point, D.relPoint, D.x, D.y
+    if self.frame then ApplyPosition(self.frame) end
+end
+
 function Mini:Show()
     self:GetFrame():Show()
 end

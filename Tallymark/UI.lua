@@ -159,7 +159,7 @@ local function BuildAmmo(page)
     -- It counts ammo in all bags, not only the quiver or ammo pouch.
     p.cards = CardRow(page, -110, { "Dungeon", "Lifetime", "Ammo left" })
 
-    -- Bell on the ammo card: the low ammo warning is on (fixed at 200 in 0.1.0).
+    -- Bell on the ammo card: shown while the low ammo warning is on.
     local bell = p.cards[3].frame:CreateTexture(nil, "OVERLAY")
     bell:SetTexture(T().textures.bell)
     bell:SetSize(16, 16)
@@ -817,10 +817,12 @@ function UI:Toggle()
     end
 end
 
+-- Puts both windows back in their starting spots (/tally reset).
 function UI:ResetPosition()
     local w = TM.db.window
     w.point, w.relPoint, w.x, w.y = "CENTER", "CENTER", 0, 0
     if self.frame then
         ApplyPosition(self.frame)
     end
+    TM.Mini:ResetPosition()
 end
