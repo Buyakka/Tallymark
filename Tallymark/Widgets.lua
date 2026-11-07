@@ -33,6 +33,11 @@ function W.Solid(parent, color, layer)
     local tex = parent:CreateTexture(nil, layer or "ARTWORK")
     tex:SetTexture(T().textures.solid)
     tex:SetVertexColor(T():RGB(color))
+    if color == "barTrack" then   -- empty part of a bar fades with the window
+        tex.tmTrack = true
+        local o = TM.db and TM.db.window and tonumber(TM.db.window.opacity) or 1
+        tex:SetAlpha(math.max(0.2, math.min(1, o)))
+    end
     return tex
 end
 
@@ -91,12 +96,43 @@ function W.Box(parent, bg, border, radius)
     f.bgTex = RoundedLayer(f, math.max(1, radius - b), b, -7)
     Tint(f.borderTex, border)
     Tint(f.bgTex, bg)
+    f.bgKey = bg
+    W.ApplyBoxOpacity(f)
     return f
 end
 
 function W.SetBoxColors(f, bg, border)
     Tint(f.bgTex, bg)
     Tint(f.borderTex, border)
+    f.bgKey = bg
+    W.ApplyBoxOpacity(f)
+end
+
+-- Window and card backgrounds follow the "Background opacity" setting so the
+-- game shows through. Text, buttons and warning boxes stay solid.
+local SEE_THROUGH = { windowBg = true, cardBg = true, barTrack = true }
+
+local function Opacity()
+    local o = TM.db and TM.db.window and tonumber(TM.db.window.opacity) or 1
+    return math.max(0.2, math.min(1, o))
+end
+
+function W.ApplyBoxOpacity(f)
+    local a = SEE_THROUGH[f.bgKey] and Opacity() or 1
+    for _, t in ipairs(f.bgTex) do t:SetAlpha(a) end
+    for _, t in ipairs(f.borderTex) do t:SetAlpha(a) end
+end
+
+-- Re-apply opacity to every box and bar track inside a frame (after the
+-- setting changes). Runs only on change, never per frame.
+function W.ApplyOpacityTree(frame)
+    if frame.bgTex then W.ApplyBoxOpacity(frame) end
+    for _, region in ipairs({ frame:GetRegions() }) do
+        if region.tmTrack then region:SetAlpha(Opacity()) end
+    end
+    for _, child in ipairs({ frame:GetChildren() }) do
+        W.ApplyOpacityTree(child)
+    end
 end
 
 function W.Divider(parent)

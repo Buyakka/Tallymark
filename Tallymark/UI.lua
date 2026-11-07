@@ -710,6 +710,12 @@ function UI:ApplyScale()
     self.frame:SetScale(s)
 end
 
+-- Background opacity from settings. Text stays solid.
+function UI:ApplyOpacity()
+    if not self.frame then return end
+    W.ApplyOpacityTree(self.frame)
+end
+
 function UI:Refresh()
     if not (self.frame and self.frame:IsShown() and self.activeTab) then return end
     if self.settingsOn then return end   -- stats are hidden while settings are open

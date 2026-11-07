@@ -17,7 +17,7 @@ local W = TM.W
 -- Settings that "Reset to default" puts back. Window position, open tab and
 -- the stats themselves are never touched.
 local RESET_KEYS = {
-    { "window", "locked" }, { "window", "scale" }, { "window", "hideInCombat" },
+    { "window", "locked" }, { "window", "scale" }, { "window", "opacity" }, { "window", "hideInCombat" },
     { "minimap", "hide" },
     { "ammo", "warn" }, { "ammo", "warnAt" },
     { "ammo", "popup" }, { "ammo", "popupSeconds" },
@@ -29,6 +29,7 @@ local RESET_KEYS = {
 local function RefreshAll()
     for _, c in ipairs(Settings.controls or {}) do c:Refresh() end
     TM.UI:ApplyScale()
+    TM.UI:ApplyOpacity()
     TM.UI:Refresh()
 end
 
@@ -99,6 +100,13 @@ local function BuildGeneral(page)
         function() return math.floor((TM.db.window.scale or 1) * 100 + 0.5) end,
         function(v) TM.db.window.scale = v / 100 end))
     size.slider:HookScript("OnMouseUp", function() TM.UI:ApplyScale() end)
+    s.Add(W.Slider(page, "Background opacity", "Lower it to see the game through the window. Text stays clear.", 20, 100, 5,
+        function(v) return string.format("%d%%", v) end,
+        function() return math.floor((TM.db.window.opacity or 1) * 100 + 0.5) end,
+        function(v)
+            TM.db.window.opacity = v / 100
+            TM.UI:ApplyOpacity()
+        end))
     s.Add(W.Checkbox(page, "Hide the window during combat", "It comes back by itself when the fight ends.",
         function() return TM.db.window.hideInCombat end,
         function(v) TM.db.window.hideInCombat = v end))

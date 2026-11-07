@@ -20,3 +20,4 @@
 - Gear button now opens settings (it used to lock the window). Minimap right-click opens settings too.
 - Settings now open inside the main window instead of a second window. The gear switches between stats and settings; the tabs become General, Ammo warning, Journey; the footer shows Reset to default and Done. Window size applies when you let go of the slider.
 - Low ammo warning settings: one "Warn me below" amount (100, 200, 1000, anything) used by both warnings. Turn each on or off: on the window (gold card, bell, reminder box) and pop-up alert. Pop-up shows for 1 to 10 seconds (default 3), right away in the upper middle of the screen, also during a fight. Clicks go through it.
+- Background opacity setting (General, 20% to 100%). Lower it to see the game through the window and cards; text, buttons and warnings stay solid.
