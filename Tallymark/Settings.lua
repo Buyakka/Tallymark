@@ -49,9 +49,8 @@ local function DoResetStats(kind)
 end
 
 StaticPopupDialogs["TALLYMARK_RESET_STATS"] = {
-    text = "Reset %s for %s?
-
-They go back to zero. This can't be undone.",
+    -- string.char(10) is a line break (kept out of the quotes on purpose).
+    text = "Reset %s for %s?" .. string.rep(string.char(10), 2) .. "They go back to zero. This can't be undone.",
     button1 = "Reset",
     button2 = "Cancel",
     OnAccept = function(self, data) DoResetStats(data or self.data) end,
