@@ -15,6 +15,7 @@ Status: 0.1.0 Beta, in development.
 - `/tally help` list all commands
 - `/tally status` show version and saved settings
 - `/tally reset` move the window back to the center
+- `/tally test` check what Tallymark can read here (try in and out of combat, and in a dungeon)
 - `/tally debug journey` show the last moves and your journey totals
 - `/tally debug arrows` hunters: show ammo, fights and the last shots
 

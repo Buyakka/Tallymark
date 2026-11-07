@@ -156,6 +156,13 @@ function Journey:Data()
 end
 function Journey:Session() return session end
 
+-- "yes", "nil", "secret", "no api" or "error". Used by /tally test.
+function Journey:PositionState()
+    local x, reason = ReadPosition()
+    if x then return "yes" end
+    return reason
+end
+
 function Journey:TotalYards()
     local total = 0
     for _, v in pairs(Data().yards) do total = total + v end

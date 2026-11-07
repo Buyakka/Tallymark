@@ -121,6 +121,7 @@ local COMMANDS = {
     { "/tally help",   "List all commands." },
     { "/tally status", "Show version and saved settings." },
     { "/tally reset",  "Move the window back to the center." },
+    { "/tally test",   "Check what Tallymark can read here (try in and out of combat)." },
     { "/tally debug journey", "Show the last moves and your journey totals." },
     { "/tally debug arrows",  "Hunters: show ammo, fights and the last shots." },
 }
@@ -141,6 +142,107 @@ local function PrintStatus()
         w.shown and "shown" or "hidden", tostring(w.point), w.x or 0, w.y or 0))
 end
 
+---------------------------------------------------------------------------
+-- /tally test: what can the addon read right here, right now?
+-- Run it out of combat, in combat and inside a dungeon.
+---------------------------------------------------------------------------
+
+local function SafeCall(fn, ...)
+    if type(fn) ~= "function" then return nil end
+    local ok, a, b, c, d = pcall(fn, ...)
+    if not ok then return nil end
+    return a, b, c, d
+end
+
+local function Shown(v)
+    if v == nil then return "?" end
+    if issecretvalue and issecretvalue(v) then return "secret" end
+    return tostring(v)
+end
+
+local function YesNo(fn, ...)
+    local v = SafeCall(fn, ...)
+    if v == nil then return "?" end
+    if issecretvalue and issecretvalue(v) then return "secret" end
+    return v and "yes" or "no"
+end
+
+local function PrintTest()
+    local T = TM.Theme
+    local A = TM.Arrows
+
+    TM:Print(T:Color("text", "Test") .. "  (Tallymark v" .. TM.VERSION .. ")")
+
+    local version, build, _, toc = SafeCall(GetBuildInfo)
+    TM:Print(string.format("  Client: interface %s, version %s, build %s", Shown(toc), Shown(version), Shown(build)))
+
+    local inInstance, kind = SafeCall(IsInInstance)
+    local where = Shown(SafeCall(GetRealZoneText))
+    if inInstance == nil or (issecretvalue and issecretvalue(inInstance)) then
+        where = where .. " (instance: " .. Shown(inInstance) .. ")"
+    elseif inInstance then
+        where = where .. " (inside " .. Shown(kind) .. " instance)"
+    else
+        where = where .. " (open world)"
+    end
+    TM:Print("  Where: " .. where .. ", in combat: " .. YesNo(UnitAffectingCombat, "player"))
+
+    local pos = TM.Journey:PositionState()
+    TM:Print("  Position readable: " .. T:Color(pos == "yes" and "accent" or "warning", pos))
+
+    if not A.enabled then
+        TM:Print("  Ammo and casts: hunters only.")
+        return
+    end
+
+    local n, state = A:AmmoCount()
+    local ammoText
+    if state == "yes" then
+        ammoText = T:Color("accent", "yes") .. " (" .. n .. " " .. A:AmmoWord(n) .. ")"
+    elseif state == "secret" then
+        ammoText = T:Color("warning", "secret")
+    else
+        ammoText = T:Color("warning", "no ammo equipped")
+    end
+    TM:Print("  Ammo count readable: " .. ammoText .. ", type: " .. A:AmmoKind())
+
+    TM:Print(T:Color("text", "  Last casts (oldest first)"))
+    local list = A:RecentCasts()
+    if #list == 0 then TM:Print("    none yet") end
+    for _, c in ipairs(list) do
+        local ammo
+        if c.drop == nil then
+            ammo = T:Color("muted", "ammo: " .. (c.ammoState == "yes" and "unknown" or c.ammoState))
+        elseif c.drop > 0 then
+            ammo = T:Color("accent", "ammo -" .. c.drop)
+        else
+            ammo = T:Color("muted", "ammo no change")
+        end
+        TM:Print(string.format("    %s  %s  %s", c.name,
+            c.counted and "counted" or T:Color("muted", "not counted"), ammo))
+    end
+
+    -- Which spells really use ammo? Flag the ones that disagree with the shot list.
+    local stats = A:SpellStats()
+    local names = {}
+    for name in pairs(stats) do names[#names + 1] = name end
+    table.sort(names)
+    if #names > 0 then
+        TM:Print(T:Color("text", "  This session: did ammo go down after the spell?"))
+    end
+    for _, name in ipairs(names) do
+        local s = stats[name]
+        local inList = A:IsShot(name)
+        local note = ""
+        if inList and s.drops == 0 then
+            note = T:Color("warning", "  in shot list, but used no ammo")
+        elseif not inList and s.drops > 0 then
+            note = T:Color("warning", "  NOT in shot list, but ammo went down")
+        end
+        TM:Print(string.format("    %s: %d of %d casts%s", name, s.drops, s.casts, note))
+    end
+end
+
 SLASH_TALLY1 = "/tally"
 SlashCmdList["TALLY"] = function(msg)
     if not TM.db then return end
@@ -155,6 +257,8 @@ SlashCmdList["TALLY"] = function(msg)
     elseif cmd == "reset" then
         TM.UI:ResetPosition()
         TM:Print("Window moved to the center.")
+    elseif cmd == "test" then
+        PrintTest()
     elseif cmd == "debug journey" then
         TM.Journey:PrintDebug()
     elseif cmd == "debug arrows" or cmd == "debug ammo" then

@@ -151,7 +151,8 @@ end
 local fight            -- the current fight, nil out of combat
 local merchantOpen = false
 local pending = {}     -- shots just before combat started: { t, name }
-local casts = {}       -- last few player casts, for debug
+local casts = {}       -- last few player casts, for debug and /tally test
+local spellStats = {}  -- this session: spell name -> { casts, drops } (did ammo go down after it)
 
 local function PushLimited(list, item, limit)
     table.insert(list, item)
@@ -228,6 +229,20 @@ local function OnSpellcast(spellID)
     end
 
     local ammo, state = ReadAmmoCount()
+
+    -- The count now is the "after" for the previous cast. Learn which spells use ammo.
+    local prev = casts[#casts]
+    if prev and prev.ammo and state == "yes" then
+        prev.after = ammo
+        local drop = prev.ammo - ammo
+        if prev.name ~= "secret" then
+            local s = spellStats[prev.name] or { casts = 0, drops = 0 }
+            s.casts = s.casts + 1
+            if drop > 0 then s.drops = s.drops + 1 end
+            spellStats[prev.name] = s
+        end
+    end
+
     PushLimited(casts, {
         name = name,
         counted = counted or false,
@@ -361,6 +376,25 @@ function Arrows:LastFight()
 end
 -- Returns value, state ("yes", "secret", "none").
 function Arrows:AmmoCount() return ReadAmmoCount() end
+function Arrows:AmmoKind() return ReadAmmoKind() end
+function Arrows:IsShot(name) return SHOTS[name] == true end
+
+-- Last casts, oldest first. Each has name, counted, ammo (before), ammoState,
+-- and drop: how much ammo went down after it (nil if unknown).
+function Arrows:RecentCasts()
+    local list = {}
+    local now, state = ReadAmmoCount()
+    for i, c in ipairs(casts) do
+        local after = c.after
+        if after == nil and i == #casts and state == "yes" then after = now end
+        local drop
+        if c.ammo and after then drop = c.ammo - after end
+        list[i] = { name = c.name, counted = c.counted, ammoState = c.ammoState, drop = drop }
+    end
+    return list
+end
+
+function Arrows:SpellStats() return spellStats end
 
 function Arrows:Init()
     if not self:IsHunter() then return end
