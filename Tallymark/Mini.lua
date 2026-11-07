@@ -5,7 +5,8 @@
 -- window. Right-click the card for settings (opens in the big window).
 -- Shows steps today, distance today, and for hunters: ammo this fight (or
 -- last fight) and arrows or bullets left (gold when low).
--- It has its own position, and follows the lock, size and opacity settings.
+-- It has its own position, size and opacity, and follows the lock and
+-- hide-in-combat settings.
 
 local ADDON, TM = ...
 
@@ -149,10 +150,10 @@ function Mini:GetFrame()
     return self.frame
 end
 
--- Size and opacity from settings (shared with the big window).
+-- Size and opacity from Settings > Small window (separate from the big window).
 function Mini:ApplyLook()
     if not self.frame then return end
-    local w = TM.db.window
+    local w = TM.db.mini
     self.frame:SetScale(math.max(0.7, math.min(1.3, tonumber(w.scale) or 1)))
     self.frame:SetAlpha(math.max(0.2, math.min(1, tonumber(w.opacity) or 1)))
 end

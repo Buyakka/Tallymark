@@ -3,7 +3,7 @@
 -- window to settings mode (see UI:ShowSettings). Also opened by the minimap
 -- right-click, /tally settings, and Options > AddOns > Tallymark.
 -- Changes apply right away.
--- Sections: General, Ammo warning, Journey. Appearance (styles, colors)
+-- Sections: General, Small window, Ammo, Journey. Appearance (styles, colors)
 -- and History come in later versions.
 
 local ADDON, TM = ...
@@ -17,7 +17,7 @@ local W = TM.W
 -- Settings that "Reset to default" puts back. Window position, open tab and
 -- the stats themselves are never touched.
 local RESET_KEYS = {
-    { "window", "small" }, { "window", "locked" }, { "window", "scale" }, { "window", "opacity" },
+    { "window", "small" }, { "mini", "scale" }, { "mini", "opacity" }, { "window", "locked" }, { "window", "scale" }, { "window", "opacity" },
     { "window", "hideInCombat" },
     { "minimap", "hide" },
     { "ammo", "warn" }, { "ammo", "warnAt" },
@@ -91,10 +91,7 @@ end
 local function BuildGeneral(page)
     local s = Stacker(page)
     s.Heading("WINDOW", 0)
-    s.Add(W.Checkbox(page, "Small window", "Steps and ammo in a small card you can keep on screen.",
-        function() return TM.db.window.small end,
-        function(v) TM.UI:SetSmall(v) end))
-    s.Add(W.Checkbox(page, "Lock window position", "Stops the window from being dragged by accident.",
+    s.Add(W.Checkbox(page, "Lock window position", "Stops both windows from being dragged by accident.",
         function() return TM.db.window.locked end,
         function(v) TM.UI:SetLocked(v) end))
     -- The size is applied when the mouse is let go. Resizing while dragging would
@@ -111,7 +108,7 @@ local function BuildGeneral(page)
             TM.db.window.opacity = v / 100
             TM.UI:ApplyOpacity()
         end))
-    s.Add(W.Checkbox(page, "Hide the window during combat", "It comes back by itself when the fight ends.",
+    s.Add(W.Checkbox(page, "Hide during combat", "Both windows come back by themselves when the fight ends.",
         function() return TM.db.window.hideInCombat end,
         function(v) TM.db.window.hideInCombat = v end))
 
@@ -119,6 +116,31 @@ local function BuildGeneral(page)
     s.Add(W.Checkbox(page, "Show minimap button", "You can always open Tallymark with /tally or /tm.",
         function() return not TM.db.minimap.hide end,
         function(v) TM.MinimapButton:SetHidden(not v) end))
+end
+
+-- The small window has its own size and opacity. While this page is open and
+-- the small window is on, it shows next to settings as a live preview.
+local function BuildMini(page)
+    local s = Stacker(page)
+    s.Heading("SMALL WINDOW", 0)
+    s.Add(W.Checkbox(page, "Use the small window", "Steps and ammo in a small card, instead of this window.",
+        function() return TM.db.window.small end,
+        function(v) TM.UI:SetSmall(v) end))
+    s.Add(W.Slider(page, "Size", nil, 70, 130, 5,
+        function(v) return string.format("%d%%", v) end,
+        function() return math.floor((TM.db.mini.scale or 1) * 100 + 0.5) end,
+        function(v)
+            TM.db.mini.scale = v / 100
+            TM.Mini:ApplyLook()
+        end))
+    s.Add(W.Slider(page, "Opacity", nil, 20, 100, 5,
+        function(v) return string.format("%d%%", v) end,
+        function() return math.floor((TM.db.mini.opacity or 1) * 100 + 0.5) end,
+        function(v)
+            TM.db.mini.opacity = v / 100
+            TM.Mini:ApplyLook()
+        end))
+    s.Note("While you are on this page, the small window shows on screen so you can see your changes. Drag it to move it. Right-click it to open settings.", 16)
 end
 
 local function BuildAmmo(page)
@@ -176,7 +198,8 @@ end
 
 local SECTIONS = {
     { key = "general", label = "General",      build = BuildGeneral },
-    { key = "ammo",    label = "Ammo warning", build = BuildAmmo },
+    { key = "mini",    label = "Small window", build = BuildMini },
+    { key = "ammo",    label = "Ammo",         build = BuildAmmo },
     { key = "journey", label = "Journey",      build = BuildJourney },
 }
 

@@ -1,7 +1,7 @@
 -- Popup.lua
 -- Low ammo alert: a small gold box in the upper middle of the screen that
 -- shows right away (also during a fight) and fades out after a few seconds
--- (Settings > Ammo warning). It ignores the mouse, so it never blocks a click.
+-- (Settings > Ammo). It ignores the mouse, so it never blocks a click.
 -- Shown when ammo drops below the pop-up amount, and once after login if
 -- already low. Never shows anything based on a secret value.
 

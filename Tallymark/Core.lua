@@ -61,7 +61,9 @@ local DB_DEFAULTS = {
         x        = 0,
         y        = 0,
     },
-    mini = {                    -- small window position
+    mini = {                    -- small window: own size, opacity and position
+        scale    = 1.0,
+        opacity  = 1.0,
         point    = "RIGHT",
         relPoint = "RIGHT",
         x        = -60,
