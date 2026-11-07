@@ -117,12 +117,12 @@ local function BuildAmmo(page)
     end
     -- One amount drives both warnings; each can be turned on or off.
     s.Heading("LOW AMMO", hunter and 0 or 16)
-    s.Add(W.NumberBox(page, "Warn me below", "Arrows or bullets left in your bags. Like 100, 200 or 1000.", 1, 5000, 0,
+    s.Add(W.NumberBox(page, "Warn me below", "Arrows or bullets left in your bags.", 1, 5000, 0,
         function() return TM.db.ammo.warnAt end,
         function(v)
             TM.db.ammo.warnAt = v
             TM.UI:Refresh()
-        end), 0)
+        end), 8)
 
     s.Heading("HOW TO WARN ME")
     s.Add(W.Checkbox(page, "On the window", "Ammo card turns gold, with a bell and a reminder box.",
