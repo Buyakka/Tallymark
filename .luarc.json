@@ -18,6 +18,12 @@
         "C_Map",
         "strtrim",
         "issecretvalue",
-        "GetBuildInfo"
+        "GetBuildInfo",
+        "GetTime",
+        "UnitPosition",
+        "UnitOnTaxi",
+        "UnitIsDeadOrGhost",
+        "IsSwimming",
+        "IsMounted"
     ]
 }

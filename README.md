@@ -15,6 +15,7 @@ Status: 0.1.0 Beta, in development.
 - `/tally help` list all commands
 - `/tally status` show version and saved settings
 - `/tally reset` move the window back to the center
+- `/tally debug journey` show the last moves and your journey totals
 
 ## Install for development
 

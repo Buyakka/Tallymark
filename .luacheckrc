@@ -25,4 +25,10 @@ read_globals = {
     "strtrim",
     "issecretvalue",
     "GetBuildInfo",
+    "GetTime",
+    "UnitPosition",
+    "UnitOnTaxi",
+    "UnitIsDeadOrGhost",
+    "IsSwimming",
+    "IsMounted",
 }

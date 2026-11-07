@@ -41,6 +41,7 @@ end
 
 -- Account-wide settings (TallymarkDB).
 local DB_DEFAULTS = {
+    units = "miles",            -- "miles" or "km"
     window = {
         shown    = false,
         point    = "CENTER",
@@ -50,8 +51,9 @@ local DB_DEFAULTS = {
     },
 }
 
--- Per character stats (TallymarkCharDB). Stats tables come in later steps.
-local CHAR_DEFAULTS = {}
+-- Per character stats (TallymarkCharDB). Each module adds its own table here
+-- when its file loads (for example TM.CHAR_DEFAULTS.journey in Journey.lua).
+TM.CHAR_DEFAULTS = {}
 
 -- Copy any missing keys from defaults into t. Never overwrites existing values.
 local function FillDefaults(t, defaults)
@@ -103,7 +105,7 @@ local function SetupDB()
     Migrate(TallymarkCharDB, CHAR_MIGRATIONS)
 
     FillDefaults(TallymarkDB, DB_DEFAULTS)
-    FillDefaults(TallymarkCharDB, CHAR_DEFAULTS)
+    FillDefaults(TallymarkCharDB, TM.CHAR_DEFAULTS)
 
     TM.db = TallymarkDB
     TM.char = TallymarkCharDB
@@ -118,6 +120,7 @@ local COMMANDS = {
     { "/tally help",   "List all commands." },
     { "/tally status", "Show version and saved settings." },
     { "/tally reset",  "Move the window back to the center." },
+    { "/tally debug journey", "Show the last moves and your journey totals." },
 }
 
 local function PrintHelp()
@@ -150,6 +153,8 @@ SlashCmdList["TALLY"] = function(msg)
     elseif cmd == "reset" then
         TM.UI:ResetPosition()
         TM:Print("Window moved to the center.")
+    elseif cmd == "debug journey" then
+        TM.Journey:PrintDebug()
     else
         TM:Print("Unknown command. Type /tally help")
     end
@@ -169,6 +174,7 @@ events:SetScript("OnEvent", function(self, event, arg1)
         self:UnregisterEvent("ADDON_LOADED")
     elseif event == "PLAYER_LOGIN" then
         if not TM.db then return end
+        TM.Journey:Init()
         TM.UI:Init()
         TM:Print("v" .. TM.VERSION .. " loaded. Type /tally help")
         self:UnregisterEvent("PLAYER_LOGIN")
