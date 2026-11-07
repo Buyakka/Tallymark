@@ -1,0 +1,36 @@
+Tallymark
+Copyright (c) 2026 Buyaka. All rights reserved.
+
+This software and its source code, artwork and other files (except the fonts
+listed below) are the property of Buyaka.
+
+You MAY:
+- Download Tallymark from an official source and use it in World of Warcraft
+  for your own personal play.
+- Read the source code, as required by the Blizzard UI Add-On Development Policy.
+
+You may NOT, without written permission from Buyaka:
+- Copy, reuse or include any part of the code, artwork or design in another
+  project, addon, website or app.
+- Change Tallymark and share or publish the changed version.
+- Re-upload, mirror, repackage or redistribute Tallymark, in whole or in part,
+  on any site or service.
+- Sell Tallymark or any part of it, or use it for any commercial purpose.
+
+Viewing or forking this repository on GitHub, as allowed by GitHub's Terms of
+Service, does not give you any of the rights listed above.
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. IN NO EVENT
+SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING
+FROM THE USE OF THIS SOFTWARE.
+
+Third-party fonts
+-----------------
+The font files in Tallymark/Media/Fonts are not covered by this license.
+They are licensed under the SIL Open Font License, Version 1.1:
+- Inter (Copyright 2020 The Inter Project Authors), see OFL-Inter.txt
+- Space Grotesk (Copyright 2020 The Space Grotesk Project Authors),
+  see OFL-SpaceGrotesk.txt
+
+World of Warcraft is a trademark of Blizzard Entertainment, Inc.
+Tallymark is not made by or affiliated with Blizzard Entertainment.

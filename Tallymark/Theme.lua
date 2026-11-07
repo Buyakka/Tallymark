@@ -32,14 +32,17 @@ Theme.colors = {
     danger        = Hex("E5484D"),
 }
 
--- Custom fonts (Space Grotesk for the name and big numbers, Inter for the rest)
--- will be dropped into Media/Fonts. Until then, use the game's standard font.
-local DEFAULT_FONT = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
+-- Fonts: Space Grotesk Bold for the name and big numbers, Inter for the rest.
+-- Both are SIL Open Font License (see Media/Fonts/OFL-*.txt).
+-- If a font file fails to load, the game's standard font is used instead.
+local FONT_DIR = "Interface\\AddOns\\Tallymark\\Media\\Fonts\\"
+
+Theme.fallbackFont = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
 
 Theme.fonts = {
-    display = DEFAULT_FONT,   -- name and big numbers (Space Grotesk Bold later)
-    body    = DEFAULT_FONT,   -- everything else (Inter later)
-    bodyBold = DEFAULT_FONT,  -- labels and headings (Inter SemiBold later)
+    display  = FONT_DIR .. "SpaceGrotesk-Bold.ttf",  -- name and big numbers
+    body     = FONT_DIR .. "Inter-Regular.ttf",      -- everything else
+    bodyBold = FONT_DIR .. "Inter-SemiBold.ttf",     -- labels and headings
 }
 
 Theme.sizes = {

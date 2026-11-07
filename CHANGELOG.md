@@ -7,3 +7,5 @@
 - Step 3: arrow and bullet tracking for hunters. Counts shots live per fight, per dungeon and lifetime, split by arrows and bullets, with a per-shot breakdown. Reads ammo left and checks it against the shot count after each fight. Keeps the last 50 fights. `/tally debug arrows` shows it all.
 - Step 4: the Shadow window. Tabs for Ammo (hunters), Journey and History. Big live number, Dungeon, Lifetime and Bullets/Arrows left cards, low ammo box (under 200), bars by shot and by travel type, recent fights list, lock button.
 - Step 5: `/tally test`. Shows client build, whether position and ammo can be read here, the last 10 casts with how much ammo went down after each, and which spells used ammo this session (flags any that disagree with the shot list).
+- Fonts: Space Grotesk Bold for the name and big numbers, Inter for everything else (SIL Open Font License, included in Media/Fonts). Falls back to the game font if a file fails to load.
+- License: All Rights Reserved (LICENSE file, README notice, TOC X-License line, LICENSE.txt shipped inside the addon folder).

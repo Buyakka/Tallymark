@@ -20,7 +20,9 @@ local function T() return TM.Theme end
 
 local function Text(parent, font, size, color, justify)
     local fs = parent:CreateFontString(nil, "OVERLAY")
-    fs:SetFont(T().fonts[font], size, "")
+    if not fs:SetFont(T().fonts[font], size, "") then
+        fs:SetFont(T().fallbackFont, size, "")
+    end
     fs:SetTextColor(T():RGB(color))
     fs:SetJustifyH(justify or "LEFT")
     fs:SetWordWrap(false)
