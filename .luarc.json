@@ -1,0 +1,23 @@
+{
+    "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+    "runtime.version": "Lua 5.1",
+    "workspace.library": [],
+    "diagnostics.globals": [
+        "TallymarkDB",
+        "TallymarkCharDB",
+        "SLASH_TALLY1",
+        "SlashCmdList",
+        "CreateFrame",
+        "UIParent",
+        "DEFAULT_CHAT_FRAME",
+        "STANDARD_TEXT_FONT",
+        "C_AddOns",
+        "C_Timer",
+        "C_Spell",
+        "C_Item",
+        "C_Map",
+        "strtrim",
+        "issecretvalue",
+        "GetBuildInfo"
+    ]
+}

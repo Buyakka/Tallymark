@@ -1,0 +1,12 @@
+## Interface: 16001
+## Title: Tallymark
+## Notes: Every step. Every shot. Tracks your journey and arrows.
+## Author: Buyaka
+## Version: 0.1.0
+## IconTexture: Interface\AddOns\Tallymark\Media\Logo
+## SavedVariables: TallymarkDB
+## SavedVariablesPerCharacter: TallymarkCharDB
+
+Theme.lua
+Core.lua
+UI.lua
