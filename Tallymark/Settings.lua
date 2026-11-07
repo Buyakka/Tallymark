@@ -157,7 +157,7 @@ local function BuildJourney(page)
 
     s.Heading("STEPS")
     s.Add(W.NumberBox(page, "Step length (yards)",
-        "1.0 = one yard (about 0.9 m). Only new steps use a new length.", 0.3, 3, 2,
+        "How far one step goes. 1 yard is about 0.9 m. Past steps don't change.", 0.3, 3, 2,
         function() return TM.db.journey.stride end,
         function(v) TM.db.journey.stride = v end))
 end

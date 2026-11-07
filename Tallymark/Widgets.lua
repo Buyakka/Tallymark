@@ -351,10 +351,16 @@ end
 function W.NumberBox(parent, label, desc, minV, maxV, decimals, get, set)
     local S = T().sizes
     local row = CreateFrame("Frame", nil, parent)
-    row:SetHeight(desc and 44 or 30)
+    -- The note sits beside the box, so a longer one gets a second line.
+    local twoLines = desc and #desc > 40
+    row:SetHeight(twoLines and 60 or desc and 44 or 30)
     LabelBlock(row, label, desc)
     row.label:SetPoint("TOPLEFT", 0, -6)
     row.label:SetPoint("RIGHT", row, "RIGHT", -100, 0)
+    if twoLines then
+        row.desc:SetWordWrap(true)
+        row.desc:SetMaxLines(2)
+    end
 
     local box = W.Box(row, "cardBg", "border", T().radius.button)
     box:SetSize(84, 28)
