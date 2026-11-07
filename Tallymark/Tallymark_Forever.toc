@@ -13,3 +13,4 @@ Core.lua
 Journey.lua
 Arrows.lua
 UI.lua
+Minimap.lua

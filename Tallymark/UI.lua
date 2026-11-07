@@ -40,21 +40,67 @@ local function Solid(parent, color, layer)
     return tex
 end
 
-local function Box(parent, bg, border)
-    local f = CreateFrame("Frame", nil, parent, "BackdropTemplate")
-    f:SetBackdrop({
-        bgFile = T().textures.solid,
-        edgeFile = T().textures.solid,
-        edgeSize = T().sizes.borderSize,
-    })
-    f:SetBackdropColor(T():RGB(bg))
-    f:SetBackdropBorderColor(T():RGB(border))
+-- One rounded rectangle made of textures: 4 circle-quarter corners + 3 strips.
+-- inset moves it in from the frame edges. Returns the list of textures.
+local function RoundedLayer(f, radius, inset, sublevel)
+    local tex = {}
+    local function piece()
+        local t = f:CreateTexture(nil, "BACKGROUND", nil, sublevel)
+        tex[#tex + 1] = t
+        return t
+    end
+    local circle = T().textures.circle
+    local corners = {
+        { "TOPLEFT",     0,   0.5, 0,   0.5,  inset, -inset },
+        { "TOPRIGHT",    0.5, 1,   0,   0.5, -inset, -inset },
+        { "BOTTOMLEFT",  0,   0.5, 0.5, 1,    inset,  inset },
+        { "BOTTOMRIGHT", 0.5, 1,   0.5, 1,   -inset,  inset },
+    }
+    for _, c in ipairs(corners) do
+        local t = piece()
+        t:SetTexture(circle)
+        t:SetTexCoord(c[2], c[3], c[4], c[5])
+        t:SetSize(radius, radius)
+        t:SetPoint(c[1], c[6], c[7])
+    end
+    local solid = T().textures.solid
+    local mid = piece()          -- full height, between the corners
+    mid:SetTexture(solid)
+    mid:SetPoint("TOPLEFT", inset + radius, -inset)
+    mid:SetPoint("BOTTOMRIGHT", -(inset + radius), inset)
+    local left = piece()
+    left:SetTexture(solid)
+    left:SetPoint("TOPLEFT", inset, -(inset + radius))
+    left:SetPoint("BOTTOMLEFT", inset, inset + radius)
+    left:SetWidth(radius)
+    local right = piece()
+    right:SetTexture(solid)
+    right:SetPoint("TOPRIGHT", -inset, -(inset + radius))
+    right:SetPoint("BOTTOMRIGHT", -inset, inset + radius)
+    right:SetWidth(radius)
+    return tex
+end
+
+local function Tint(list, color)
+    for _, t in ipairs(list) do t:SetVertexColor(T():RGB(color)) end
+end
+
+-- A frame with a rounded background and a 1px rounded border.
+-- Pass the same color for bg and border for no visible border.
+local function Box(parent, bg, border, radius)
+    local f = CreateFrame("Frame", nil, parent)
+    radius = radius or T().radius.card
+    local b = T().sizes.borderSize
+    f.borderTex = RoundedLayer(f, radius, 0, -8)
+    f.bgTex = RoundedLayer(f, math.max(1, radius - b), b, -7)
+    Tint(f.borderTex, border)
+    Tint(f.bgTex, bg)
     return f
 end
 
 local function SetBoxColors(f, bg, border)
-    f:SetBackdropColor(T():RGB(bg))
-    f:SetBackdropBorderColor(T():RGB(border))
+    Tint(f.bgTex, bg)
+    Tint(f.borderTex, border)
 end
 
 local function Divider(parent)
@@ -63,11 +109,11 @@ local function Divider(parent)
     return line
 end
 
--- 12345 -> "12,345"
-local function Commas(n)
-    local s = tostring(math.floor(n))
-    local out = s:reverse():gsub("(%d%d%d)", "%1,"):reverse()
-    return (out:gsub("^,", ""))
+local function Commas(n) return TM.Commas(n) end
+
+-- "bullets" -> "Bullets"
+local function Capital(s)
+    return (s:gsub("^%l", string.upper))
 end
 
 local function Clock(sec)
@@ -104,13 +150,13 @@ local function CardRow(parent, y, labels)
     local width = (S.windowWidth - S.padding * 2 - S.gap * 2) / 3
     local cards = {}
     for i, label in ipairs(labels) do
-        local card = Box(parent, "cardBg", "border")
+        local card = Box(parent, "cardBg", "cardBg")
         card:SetSize(width, S.cardHeight)
         card:SetPoint("TOPLEFT", (i - 1) * (width + S.gap), y)
 
-        local l = Text(card, "bodyBold", S.cardLabel, "muted")
+        local l = Text(card, "body", S.cardLabel, "muted")
         l:SetPoint("TOPLEFT", 10, -10)
-        l:SetPoint("RIGHT", -10, 0)
+        l:SetPoint("RIGHT", -28, 0)
         l:SetText(label)
 
         local v = Text(card, "display", S.cardValue, "text")
@@ -190,11 +236,18 @@ local function BuildAmmo(page)
     p.big = Text(page, "display", S.bigNumber, "text")
     p.big:SetPoint("TOPLEFT", 0, -22)
     p.bigLabel = Text(page, "body", S.bigLabel, "muted")
-    p.bigLabel:SetPoint("TOPLEFT", p.big, "BOTTOMLEFT", 0, -4)
+    p.bigLabel:SetPoint("BOTTOMLEFT", p.big, "BOTTOMRIGHT", 10, 10)
 
-    -- Third card label follows the ammo type: "BULLETS LEFT" or "ARROWS LEFT".
+    -- Third card label follows the ammo type: "Bullets left" or "Arrows left".
     -- It counts ammo in all bags, not only the quiver or ammo pouch.
-    p.cards = CardRow(page, -124, { "DUNGEON", "LIFETIME", "AMMO LEFT" })
+    p.cards = CardRow(page, -110, { "Dungeon", "Lifetime", "Ammo left" })
+
+    -- Bell on the ammo card: the low ammo warning is on (fixed at 200 in 0.1.0).
+    local bell = p.cards[3].frame:CreateTexture(nil, "OVERLAY")
+    bell:SetTexture(T().textures.bell)
+    bell:SetSize(16, 16)
+    bell:SetPoint("TOPRIGHT", -8, -8)
+    p.bell = bell
 
     Heading(page, -204, "BY SHOT · LIFETIME")
     p.rows = {}
@@ -216,11 +269,11 @@ local function BuildAmmo(page)
     p.steps:SetPoint("BOTTOMRIGHT", 0, 8)
 
     -- Low ammo box, above the steps row
-    p.low = Box(page, "warningBox", "warningBorder")
+    p.low = Box(page, "warningBox", "warningBox")
     p.low:SetPoint("BOTTOMLEFT", 0, 44)
     p.low:SetPoint("BOTTOMRIGHT", 0, 44)
     p.low:SetHeight(44)
-    p.lowText = Text(p.low, "bodyBold", S.bodyText, "warning")
+    p.lowText = Text(p.low, "body", S.bodyText, "warning")
     p.lowText:SetPoint("LEFT", 12, 0)
     p.lowText:SetPoint("RIGHT", -12, 0)
 
@@ -256,7 +309,7 @@ local function RefreshAmmo(page)
 
     local n, state = A:AmmoCount()
     local quiver = p.cards[3]
-    quiver.label:SetText(A:AmmoWord(2):upper() .. " LEFT")
+    quiver.label:SetText(Capital(A:AmmoWord(2)) .. " left")
     local low = false
     if state == "none" then
         quiver.value:SetText("0")
@@ -270,15 +323,18 @@ local function RefreshAmmo(page)
     if low then
         SetBoxColors(quiver.frame, "cardBg", "warningBorder")
         SetColor(quiver.value, "warning")
+        p.bell:SetVertexColor(T():RGB("warning"))
         p.low:Show()
         if state == "none" then
-            p.lowText:SetText("No ammo equipped")
+            p.lowText:SetText("No ammo equipped. Time to restock.")
         else
-            p.lowText:SetText(string.format("Low ammo: %s %s left", Commas(n), A:AmmoWord(n)))
+            p.lowText:SetText(string.format("Low ammo: %s %s left. Time to restock.",
+                Commas(n), A:AmmoWord(n)))
         end
     else
-        SetBoxColors(quiver.frame, "cardBg", "border")
+        SetBoxColors(quiver.frame, "cardBg", "cardBg")
         SetColor(quiver.value, "text")
+        p.bell:SetVertexColor(T():RGB("muted"))
         p.low:Hide()
     end
 
@@ -314,10 +370,10 @@ local function BuildJourney(page)
     p.big = Text(page, "display", S.bigNumber, "text")
     p.big:SetPoint("TOPLEFT", 0, -22)
     p.bigLabel = Text(page, "body", S.bigLabel, "muted")
-    p.bigLabel:SetPoint("TOPLEFT", p.big, "BOTTOMLEFT", 0, -4)
+    p.bigLabel:SetPoint("BOTTOMLEFT", p.big, "BOTTOMRIGHT", 10, 10)
     p.bigLabel:SetText("steps lifetime")
 
-    p.cards = CardRow(page, -124, { "DISTANCE", "STEPS TODAY", "THIS SESSION" })
+    p.cards = CardRow(page, -110, { "Distance", "Steps today", "This session" })
 
     Heading(page, -204, "HOW YOU TRAVELED · LIFETIME")
     p.rows = {}
@@ -469,26 +525,46 @@ end
 -- Window
 ---------------------------------------------------------------------------
 
-local function UpdateLockButton(btn)
-    btn.text:SetText(TM.db.window.locked and "Unlock" or "Lock")
-end
-
-local function HeaderButton(parent, label)
-    local S = T().sizes
+-- Square icon button with a rounded border, like the design's gear and close.
+-- tooltip is a function returning the lines to show on hover.
+local function IconButton(parent, texture, tooltip)
     local btn = CreateFrame("Button", nil, parent)
-    btn.text = Text(btn, "bodyBold", S.bodyText, "muted", "CENTER")
-    btn.text:SetPoint("CENTER")
-    btn.text:SetText(label)
-    btn:SetSize(math.max(24, btn.text:GetStringWidth() + 12), 24)
-    btn:SetScript("OnEnter", function(self) SetColor(self.text, "text") end)
-    btn:SetScript("OnLeave", function(self) SetColor(self.text, "muted") end)
+    btn:SetSize(28, 28)
+    local box = Box(btn, "windowBg", "border", T().radius.button)
+    box:SetAllPoints()
+    box:SetFrameLevel(btn:GetFrameLevel())
+    btn.box = box
+
+    btn.icon = box:CreateTexture(nil, "OVERLAY")   -- on the box, so the box doesn't cover it
+    btn.icon:SetTexture(texture)
+    btn.icon:SetSize(16, 16)
+    btn.icon:SetPoint("CENTER")
+    btn.color = "muted"
+    btn.icon:SetVertexColor(T():RGB(btn.color))
+
+    btn:SetScript("OnEnter", function(self)
+        self.icon:SetVertexColor(T():RGB("text"))
+        SetBoxColors(self.box, "cardBg", "border")
+        if tooltip then
+            GameTooltip:SetOwner(self, "ANCHOR_TOP")
+            for i, line in ipairs(tooltip()) do
+                GameTooltip:AddLine(line, T():RGB(i == 1 and "text" or "muted"))
+            end
+            GameTooltip:Show()
+        end
+    end)
+    btn:SetScript("OnLeave", function(self)
+        self.icon:SetVertexColor(T():RGB(self.color))
+        SetBoxColors(self.box, "windowBg", "border")
+        GameTooltip:Hide()
+    end)
     return btn
 end
 
 local function Build()
     local S = T().sizes
 
-    local f = Box(UIParent, "windowBg", "border")
+    local f = Box(UIParent, "windowBg", "border", T().radius.window)
     f:SetSize(S.windowWidth, S.windowHeight)
     f:SetFrameStrata("MEDIUM")
     f:SetClampedToScreen(true)
@@ -517,17 +593,26 @@ local function Build()
     tagline:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -2)
     tagline:SetText("EVERY STEP. EVERY SHOT.")
 
-    local close = HeaderButton(f, "X")
-    close:SetPoint("TOPRIGHT", -S.padding + 6, -S.padding + 2)
+    local close = IconButton(f, T().textures.close, function()
+        return { "Close", "Type /tm or click the minimap button to open again." }
+    end)
+    close:SetPoint("TOPRIGHT", -S.padding, -S.padding + 2)
     close:SetScript("OnClick", function() UI:Hide() end)
 
-    local lock = HeaderButton(f, "Unlock")
-    lock:SetPoint("RIGHT", close, "LEFT", -4, 0)
-    lock:SetScript("OnClick", function(self)
-        TM.db.window.locked = not TM.db.window.locked
-        UpdateLockButton(self)
+    -- Gear: settings come in 0.2.0. For now it locks and unlocks the window.
+    local gear = IconButton(f, T().textures.gear, function()
+        return {
+            TM.db.window.locked and "Window locked" or "Window unlocked",
+            "Click to " .. (TM.db.window.locked and "unlock" or "lock") .. " the window position.",
+            "More settings are coming in a later version.",
+        }
     end)
-    UpdateLockButton(lock)
+    gear:SetPoint("RIGHT", close, "LEFT", -6, 0)
+    gear:SetScript("OnClick", function(self)
+        UI:SetLocked(not TM.db.window.locked)
+        self:GetScript("OnEnter")(self)   -- refresh the tooltip text
+    end)
+    UI.gear = gear
 
     -- Tabs
     local x = S.padding
@@ -615,9 +700,19 @@ end
 function UI:GetFrame()
     if not self.frame then
         self.frame = Build()
+        self:SetLocked(TM.db.window.locked)
         self:SelectTab(TM.db.window.tab or DefaultTab())
     end
     return self.frame
+end
+
+-- Lock or unlock dragging. The gear turns teal while locked.
+function UI:SetLocked(locked)
+    TM.db.window.locked = locked and true or false
+    if self.gear then
+        self.gear.color = TM.db.window.locked and "accent" or "muted"
+        self.gear.icon:SetVertexColor(T():RGB(self.gear.color))
+    end
 end
 
 function UI:Refresh()

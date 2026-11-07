@@ -35,6 +35,13 @@ function TM:Print(msg)
     end
 end
 
+-- 12345 -> "12,345"
+function TM.Commas(n)
+    local s = tostring(math.floor(n))
+    local out = s:reverse():gsub("(%d%d%d)", "%1,"):reverse()
+    return (out:gsub("^,", ""))
+end
+
 ---------------------------------------------------------------------------
 -- SavedVariables
 ---------------------------------------------------------------------------
@@ -49,6 +56,10 @@ local DB_DEFAULTS = {
         relPoint = "CENTER",
         x        = 0,
         y        = 0,
+    },
+    minimap = {
+        hide  = false,
+        angle = 225,                -- degrees around the minimap (bottom left)
     },
 }
 
@@ -117,7 +128,8 @@ end
 ---------------------------------------------------------------------------
 
 local COMMANDS = {
-    { "/tally",        "Show or hide the Tallymark window." },
+    { "/tally  or  /tm", "Show or hide the Tallymark window." },
+    { "/tally minimap", "Show or hide the minimap button." },
     { "/tally help",   "List all commands." },
     { "/tally status", "Show version and saved settings." },
     { "/tally reset",  "Move the window back to the center." },
@@ -244,6 +256,7 @@ local function PrintTest()
 end
 
 SLASH_TALLY1 = "/tally"
+SLASH_TALLY2 = "/tm"
 SlashCmdList["TALLY"] = function(msg)
     if not TM.db then return end
     local cmd = strtrim(msg or ""):lower()
@@ -257,6 +270,11 @@ SlashCmdList["TALLY"] = function(msg)
     elseif cmd == "reset" then
         TM.UI:ResetPosition()
         TM:Print("Window moved to the center.")
+    elseif cmd == "minimap" then
+        local hide = not TM.db.minimap.hide
+        TM.MinimapButton:SetHidden(hide)
+        TM:Print(hide and "Minimap button hidden. Type /tally minimap to bring it back."
+            or "Minimap button shown.")
     elseif cmd == "test" then
         PrintTest()
     elseif cmd == "debug journey" then
@@ -285,6 +303,7 @@ events:SetScript("OnEvent", function(self, event, arg1)
         TM.Journey:Init()
         TM.Arrows:Init()
         TM.UI:Init()
+        TM.MinimapButton:Init()
         TM:Print("v" .. TM.VERSION .. " loaded. Type /tally help")
         self:UnregisterEvent("PLAYER_LOGIN")
     end

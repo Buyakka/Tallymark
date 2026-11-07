@@ -9,6 +9,7 @@ globals = {
     "TallymarkDB",
     "TallymarkCharDB",
     "SLASH_TALLY1",
+    "SLASH_TALLY2",
     "SlashCmdList",
 }
 
@@ -31,6 +32,10 @@ read_globals = {
     "UnitIsDeadOrGhost",
     "IsSwimming",
     "IsMounted",
+    "GetCursorPosition",
+    "Minimap",
+    "GameTooltip",
+    "AddonCompartmentFrame",
     "time",
     "wipe",
     "INVSLOT_RANGED",

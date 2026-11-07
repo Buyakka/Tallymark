@@ -9,3 +9,7 @@
 - Step 5: `/tally test`. Shows client build, whether position and ammo can be read here, the last 10 casts with how much ammo went down after each, and which spells used ammo this session (flags any that disagree with the shot list).
 - Fonts: Space Grotesk Bold for the name and big numbers, Inter for everything else (SIL Open Font License, included in Media/Fonts). Falls back to the game font if a file fails to load.
 - License: All Rights Reserved (LICENSE file, README notice, TOC X-License line, LICENSE.txt shipped inside the addon folder).
+- Seal logo (ring, arrowhead with tally marks) replaces the placeholder.
+- Minimap button in the standard gold ring, with the seal arrowhead. Left-click shows or hides the window, right-click locks it, drag to move, hover for steps today and ammo left. `/tally minimap` hides or shows it.
+- `/tm` works the same as `/tally`.
+- Window matches the design: rounded corners, gear and close buttons, label next to the big number, bell on the ammo card, "Time to restock." message.

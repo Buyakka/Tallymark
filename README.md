@@ -17,7 +17,8 @@ Status: 0.1.0 Beta, in development.
 
 ## Commands
 
-- `/tally` show or hide the window
+- `/tally` or `/tm` show or hide the window (or click the minimap button)
+- `/tally minimap` show or hide the minimap button
 - `/tally help` list all commands
 - `/tally status` show version and saved settings
 - `/tally reset` move the window back to the center

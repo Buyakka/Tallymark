@@ -35,6 +35,11 @@
         "UnitAffectingCombat",
         "INVSLOT_AMMO",
         "INVSLOT_RANGED",
-        "wipe"
+        "wipe",
+        "GameTooltip",
+        "Minimap",
+        "GetCursorPosition",
+        "SLASH_TALLY2",
+        "AddonCompartmentFrame"
     ]
 }

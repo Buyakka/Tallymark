@@ -79,9 +79,24 @@ Theme.sizes = {
 -- Fixed in 0.1.0. Becomes a setting in 0.2.0.
 Theme.lowAmmo = 200
 
+local MEDIA = "Interface\\AddOns\\Tallymark\\Media\\"
+
 Theme.textures = {
-    solid = "Interface\\Buttons\\WHITE8x8",
-    logo  = "Interface\\AddOns\\Tallymark\\Media\\Logo",
+    solid  = "Interface\\Buttons\\WHITE8x8",
+    logo   = MEDIA .. "Logo",
+    minimapIcon = MEDIA .. "Icons\\MinimapIcon",   -- arrowhead only, sits in the gold ring
+    -- white icons, tinted with a theme color in game
+    circle = MEDIA .. "Icons\\Circle",   -- used for rounded corners
+    gear   = MEDIA .. "Icons\\Gear",
+    close  = MEDIA .. "Icons\\Close",
+    bell   = MEDIA .. "Icons\\Bell",
+}
+
+-- Corner radius per piece (pixels).
+Theme.radius = {
+    window = 8,
+    card   = 6,
+    button = 4,
 }
 
 -- Wraps text in a color code for chat output. Example: Theme:Color("accent", "Tallymark")
