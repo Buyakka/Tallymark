@@ -177,9 +177,24 @@ end
 local function UpdateAmmo()
     local n, state = ReadAmmoCount()
     if state == "yes" then
+        -- Pop-up when ammo goes from at/above the warning amount to below it.
+        local before = Data().lastAmmo
+        local at = TM:LowAmmoAt()
+        if at and type(before) == "number" and before >= at and n < at then
+            TM.Popup:ShowLowAmmo(n)
+        end
         Data().lastAmmo = n
     end
     return n, state
+end
+
+-- Once after login: if ammo is already low, remind the player.
+local function LoginReminder()
+    local n, state = ReadAmmoCount()
+    local at = TM:LowAmmoAt()
+    if state == "yes" and at and n < at then
+        TM.Popup:ShowLowAmmo(n)
+    end
 end
 
 ---------------------------------------------------------------------------
@@ -482,6 +497,8 @@ function Arrows:Init()
     end
     CheckInstance()
     UpdateAmmo()
+    -- Wait a few seconds so the reminder isn't lost in the loading screen.
+    C_Timer.After(4, LoginReminder)
 end
 
 local function FormatTime(sec)

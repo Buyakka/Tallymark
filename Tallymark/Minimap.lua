@@ -69,7 +69,8 @@ local function ShowTooltip(btn)
         local n, state = A:AmmoCount()
         local label = A:AmmoWord(2):gsub("^%l", string.upper) .. " left"
         if state == "yes" then
-            AddPair(label, TM.Commas(n), n < TM.Theme.lowAmmo and "warning" or "text")
+            local at = TM:LowAmmoAt()
+            AddPair(label, TM.Commas(n), (at and n < at) and "warning" or "text")
         elseif state == "none" then
             AddPair(label, "none equipped", "warning")
         end
@@ -78,7 +79,7 @@ local function ShowTooltip(btn)
 
     GameTooltip:AddLine(" ")
     AddLine("Left-click: show or hide the window", "footer")
-    AddLine("Right-click: " .. (TM.db.window.locked and "unlock" or "lock") .. " the window", "footer")
+    AddLine("Right-click: settings", "footer")
     AddLine("Drag: move this button", "footer")
     GameTooltip:Show()
 end
@@ -121,8 +122,7 @@ function Button:Init()
 
     btn:SetScript("OnClick", function(self, mouse)
         if mouse == "RightButton" then
-            TM.UI:SetLocked(not TM.db.window.locked)
-            TM:Print(TM.db.window.locked and "Window locked." or "Window unlocked.")
+            TM.Settings:Toggle()
         else
             TM.UI:Toggle()
         end

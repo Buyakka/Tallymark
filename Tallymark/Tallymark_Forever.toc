@@ -10,7 +10,10 @@
 
 Theme.lua
 Core.lua
+Widgets.lua
 Journey.lua
 Arrows.lua
+Popup.lua
 UI.lua
+Settings.lua
 Minimap.lua

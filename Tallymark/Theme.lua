@@ -76,9 +76,6 @@ Theme.sizes = {
     footerText   = 12,
 }
 
--- Fixed in 0.1.0. Becomes a setting in 0.2.0.
-Theme.lowAmmo = 200
-
 local MEDIA = "Interface\\AddOns\\Tallymark\\Media\\"
 
 Theme.textures = {

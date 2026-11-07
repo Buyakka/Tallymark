@@ -9,7 +9,7 @@ TM.Journey = Journey
 local TICK_SECONDS   = 0.5
 local MAX_YARDS_TICK = 100      -- bigger jumps are teleports, hearthstones, zoning
 local MIN_YARDS_TICK = 0.05     -- ignore tiny jitter while standing still
-local STRIDE_YARDS   = 1.0      -- one step per yard (setting comes later)
+local DEFAULT_STRIDE = 1.0      -- yards per step; the player can change it in settings
 local YARDS_PER_MILE = 1760
 local METERS_PER_YARD = 0.9144
 local DEBUG_KEEP     = 10
@@ -136,7 +136,9 @@ local function Tick()
     session.yards = session.yards + dist
 
     if STEP_TYPES[kind] then
-        local steps = dist / STRIDE_YARDS
+        local stride = (TM.db.journey and tonumber(TM.db.journey.stride)) or DEFAULT_STRIDE
+        if stride <= 0 then stride = DEFAULT_STRIDE end
+        local steps = dist / stride
         d.steps = d.steps + steps
         d.today.steps = d.today.steps + steps
         session.steps = session.steps + steps

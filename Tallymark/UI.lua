@@ -18,96 +18,11 @@ local TRAVEL_ORDER = { "foot", "mounted", "flight", "swim", "ghost" }
 
 local function T() return TM.Theme end
 
-local function Text(parent, font, size, color, justify)
-    local fs = parent:CreateFontString(nil, "OVERLAY")
-    if not fs:SetFont(T().fonts[font], size, "") then
-        fs:SetFont(T().fallbackFont, size, "")
-    end
-    fs:SetTextColor(T():RGB(color))
-    fs:SetJustifyH(justify or "LEFT")
-    fs:SetWordWrap(false)
-    return fs
-end
-
-local function SetColor(fs, color)
-    fs:SetTextColor(T():RGB(color))
-end
-
-local function Solid(parent, color, layer)
-    local tex = parent:CreateTexture(nil, layer or "ARTWORK")
-    tex:SetTexture(T().textures.solid)
-    tex:SetVertexColor(T():RGB(color))
-    return tex
-end
-
--- One rounded rectangle made of textures: 4 circle-quarter corners + 3 strips.
--- inset moves it in from the frame edges. Returns the list of textures.
-local function RoundedLayer(f, radius, inset, sublevel)
-    local tex = {}
-    local function piece()
-        local t = f:CreateTexture(nil, "BACKGROUND", nil, sublevel)
-        tex[#tex + 1] = t
-        return t
-    end
-    local circle = T().textures.circle
-    local corners = {
-        { "TOPLEFT",     0,   0.5, 0,   0.5,  inset, -inset },
-        { "TOPRIGHT",    0.5, 1,   0,   0.5, -inset, -inset },
-        { "BOTTOMLEFT",  0,   0.5, 0.5, 1,    inset,  inset },
-        { "BOTTOMRIGHT", 0.5, 1,   0.5, 1,   -inset,  inset },
-    }
-    for _, c in ipairs(corners) do
-        local t = piece()
-        t:SetTexture(circle)
-        t:SetTexCoord(c[2], c[3], c[4], c[5])
-        t:SetSize(radius, radius)
-        t:SetPoint(c[1], c[6], c[7])
-    end
-    local solid = T().textures.solid
-    local mid = piece()          -- full height, between the corners
-    mid:SetTexture(solid)
-    mid:SetPoint("TOPLEFT", inset + radius, -inset)
-    mid:SetPoint("BOTTOMRIGHT", -(inset + radius), inset)
-    local left = piece()
-    left:SetTexture(solid)
-    left:SetPoint("TOPLEFT", inset, -(inset + radius))
-    left:SetPoint("BOTTOMLEFT", inset, inset + radius)
-    left:SetWidth(radius)
-    local right = piece()
-    right:SetTexture(solid)
-    right:SetPoint("TOPRIGHT", -inset, -(inset + radius))
-    right:SetPoint("BOTTOMRIGHT", -inset, inset + radius)
-    right:SetWidth(radius)
-    return tex
-end
-
-local function Tint(list, color)
-    for _, t in ipairs(list) do t:SetVertexColor(T():RGB(color)) end
-end
-
--- A frame with a rounded background and a 1px rounded border.
--- Pass the same color for bg and border for no visible border.
-local function Box(parent, bg, border, radius)
-    local f = CreateFrame("Frame", nil, parent)
-    radius = radius or T().radius.card
-    local b = T().sizes.borderSize
-    f.borderTex = RoundedLayer(f, radius, 0, -8)
-    f.bgTex = RoundedLayer(f, math.max(1, radius - b), b, -7)
-    Tint(f.borderTex, border)
-    Tint(f.bgTex, bg)
-    return f
-end
-
-local function SetBoxColors(f, bg, border)
-    Tint(f.bgTex, bg)
-    Tint(f.borderTex, border)
-end
-
-local function Divider(parent)
-    local line = Solid(parent, "border", "BORDER")
-    line:SetHeight(T().sizes.borderSize)
-    return line
-end
+-- Shared building blocks live in Widgets.lua.
+local W = TM.W
+local Text, SetColor, Solid = W.Text, W.SetColor, W.Solid
+local Box, SetBoxColors, Divider = W.Box, W.SetBoxColors, W.Divider
+local IconButton = W.IconButton
 
 local function Commas(n) return TM.Commas(n) end
 
@@ -312,16 +227,18 @@ local function RefreshAmmo(page)
     local n, state = A:AmmoCount()
     local quiver = p.cards[3]
     quiver.label:SetText(Capital(A:AmmoWord(2)) .. " left")
+    local warnAt = TM:LowAmmoAt()   -- nil when the warning is turned off
     local low = false
     if state == "none" then
         quiver.value:SetText("0")
-        low = true
+        low = warnAt ~= nil
     elseif state == "secret" then
         quiver.value:SetText(n)   -- shown as is, no math on a secret
     else
         quiver.value:SetText(Commas(n))
-        low = n < T().lowAmmo
+        low = warnAt ~= nil and n < warnAt
     end
+    p.bell:SetShown(warnAt ~= nil)
     if low then
         SetBoxColors(quiver.frame, "cardBg", "warningBorder")
         SetColor(quiver.value, "warning")
@@ -530,42 +447,6 @@ end
 -- Window
 ---------------------------------------------------------------------------
 
--- Square icon button with a rounded border, like the design's gear and close.
--- tooltip is a function returning the lines to show on hover.
-local function IconButton(parent, texture, tooltip)
-    local btn = CreateFrame("Button", nil, parent)
-    btn:SetSize(28, 28)
-    local box = Box(btn, "windowBg", "border", T().radius.button)
-    box:SetAllPoints()
-    box:SetFrameLevel(btn:GetFrameLevel())
-    btn.box = box
-
-    btn.icon = box:CreateTexture(nil, "OVERLAY")   -- on the box, so the box doesn't cover it
-    btn.icon:SetTexture(texture)
-    btn.icon:SetSize(16, 16)
-    btn.icon:SetPoint("CENTER")
-    btn.color = "muted"
-    btn.icon:SetVertexColor(T():RGB(btn.color))
-
-    btn:SetScript("OnEnter", function(self)
-        self.icon:SetVertexColor(T():RGB("text"))
-        SetBoxColors(self.box, "cardBg", "border")
-        if tooltip then
-            GameTooltip:SetOwner(self, "ANCHOR_TOP")
-            for i, line in ipairs(tooltip()) do
-                GameTooltip:AddLine(line, T():RGB(i == 1 and "text" or "muted"))
-            end
-            GameTooltip:Show()
-        end
-    end)
-    btn:SetScript("OnLeave", function(self)
-        self.icon:SetVertexColor(T():RGB(self.color))
-        SetBoxColors(self.box, "windowBg", "border")
-        GameTooltip:Hide()
-    end)
-    return btn
-end
-
 local function Build()
     local S = T().sizes
 
@@ -604,19 +485,12 @@ local function Build()
     close:SetPoint("TOPRIGHT", -S.padding, -S.padding + 2)
     close:SetScript("OnClick", function() UI:Hide() end)
 
-    -- Gear: settings come in 0.2.0. For now it locks and unlocks the window.
+    -- Gear: opens the settings window.
     local gear = IconButton(f, T().textures.gear, function()
-        return {
-            TM.db.window.locked and "Window locked" or "Window unlocked",
-            "Click to " .. (TM.db.window.locked and "unlock" or "lock") .. " the window position.",
-            "More settings are coming in a later version.",
-        }
+        return { "Settings", "Window size, lock, ammo warning, miles or km, and more." }
     end)
     gear:SetPoint("RIGHT", close, "LEFT", -6, 0)
-    gear:SetScript("OnClick", function(self)
-        UI:SetLocked(not TM.db.window.locked)
-        self:GetScript("OnEnter")(self)   -- refresh the tooltip text
-    end)
+    gear:SetScript("OnClick", function() TM.Settings:Toggle() end)
     UI.gear = gear
 
     -- Tabs
@@ -700,24 +574,46 @@ function UI:Init()
     if TM.db.window.shown then
         self:Show()
     end
+
+    -- "Hide the window during combat": hide when combat starts, bring it back after.
+    -- Only a window the player had open comes back. A closed window stays closed.
+    local combat = CreateFrame("Frame")
+    combat:RegisterEvent("PLAYER_REGEN_DISABLED")
+    combat:RegisterEvent("PLAYER_REGEN_ENABLED")
+    combat:SetScript("OnEvent", function(_, event)
+        if not self.frame then return end
+        if event == "PLAYER_REGEN_DISABLED" then
+            if TM.db.window.hideInCombat and self.frame:IsShown() then
+                self.hiddenForCombat = true
+                self.frame:Hide()          -- db "shown" stays true on purpose
+            end
+        elseif self.hiddenForCombat then
+            self.hiddenForCombat = false
+            if TM.db.window.shown then self.frame:Show() end
+        end
+    end)
 end
 
 function UI:GetFrame()
     if not self.frame then
         self.frame = Build()
-        self:SetLocked(TM.db.window.locked)
+        self:ApplyScale()
         self:SelectTab(TM.db.window.tab or DefaultTab())
     end
     return self.frame
 end
 
--- Lock or unlock dragging. The gear turns teal while locked.
+-- Lock or unlock dragging the window.
 function UI:SetLocked(locked)
     TM.db.window.locked = locked and true or false
-    if self.gear then
-        self.gear.color = TM.db.window.locked and "accent" or "muted"
-        self.gear.icon:SetVertexColor(T():RGB(self.gear.color))
-    end
+end
+
+-- Window size from settings (0.7 to 1.3).
+function UI:ApplyScale()
+    if not self.frame then return end
+    local s = tonumber(TM.db.window.scale) or 1
+    s = math.max(0.7, math.min(1.3, s))
+    self.frame:SetScale(s)
 end
 
 function UI:Refresh()

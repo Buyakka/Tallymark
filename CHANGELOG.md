@@ -15,3 +15,6 @@
 - Window matches the design: rounded corners, gear and close buttons, label next to the big number, bell on the ammo card, "Time to restock." message.
 - "By shot" bars show this fight while in combat, and the last fight after it ends.
 - Shots are found by spell ID, so counting works in every game language, not just English. `/tally test` shows how many shot IDs were found; `/tally test shots` lists each one with its name in your language.
+- Settings window. Opens from the gear, minimap right-click, `/tally settings`, or Options > AddOns > Tallymark. General: lock window, window size (70%-130%), hide during combat, show minimap button. Ammo warning: on/off, warn below N (default 200), pop-up alert, test button. Journey: miles or kilometers, step length. Reset to default.
+- Low ammo pop-up: a gold alert near the top of the screen when ammo drops below the warning amount, and once after login if already low. Fades out after a few seconds.
+- Gear button now opens settings (it used to lock the window). Minimap right-click opens settings too.

@@ -19,6 +19,7 @@ Status: 0.1.0 Beta, in development.
 
 - `/tally` or `/tm` show or hide the window (or click the minimap button)
 - `/tally minimap` show or hide the minimap button
+- `/tally settings` open the settings window (or click the gear, or right-click the minimap button)
 - `/tally help` list all commands
 - `/tally status` show version and saved settings
 - `/tally reset` move the window back to the center

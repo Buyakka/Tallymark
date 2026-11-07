@@ -52,6 +52,8 @@ local DB_DEFAULTS = {
     window = {
         shown    = false,
         locked   = false,
+        scale    = 1.0,         -- window size, 0.7 to 1.3
+        hideInCombat = false,
         point    = "CENTER",
         relPoint = "CENTER",
         x        = 0,
@@ -61,7 +63,23 @@ local DB_DEFAULTS = {
         hide  = false,
         angle = 225,                -- degrees around the minimap (bottom left)
     },
+    ammo = {
+        warn   = true,              -- low ammo warning on the window (gold card, box)
+        warnAt = 200,               -- warn below this many arrows or bullets
+        popup  = true,              -- pop-up alert when ammo drops below warnAt
+    },
+    journey = {
+        stride = 1.0,               -- yards per step
+    },
 }
+TM.DB_DEFAULTS = DB_DEFAULTS
+
+-- The low ammo amount, or nil when the warning is turned off.
+function TM:LowAmmoAt()
+    local a = self.db and self.db.ammo
+    if not a or not a.warn then return nil end
+    return a.warnAt
+end
 
 -- Per character stats (TallymarkCharDB). Each module adds its own table here
 -- when its file loads (for example TM.CHAR_DEFAULTS.journey in Journey.lua).
@@ -131,6 +149,7 @@ local COMMANDS = {
     { "/tally  or  /tm", "Show or hide the Tallymark window." },
     { "/tally minimap", "Show or hide the minimap button." },
     { "/tally help",   "List all commands." },
+    { "/tally settings", "Open the settings window (or click the gear)." },
     { "/tally status", "Show version and saved settings." },
     { "/tally reset",  "Move the window back to the center." },
     { "/tally test",   "Check what Tallymark can read here (try in and out of combat)." },
@@ -282,6 +301,8 @@ SlashCmdList["TALLY"] = function(msg)
     elseif cmd == "reset" then
         TM.UI:ResetPosition()
         TM:Print("Window moved to the center.")
+    elseif cmd == "settings" or cmd == "options" or cmd == "config" then
+        TM.Settings:Open()
     elseif cmd == "minimap" then
         local hide = not TM.db.minimap.hide
         TM.MinimapButton:SetHidden(hide)
@@ -326,6 +347,7 @@ events:SetScript("OnEvent", function(self, event, arg1)
         TM.Arrows:Init()
         TM.UI:Init()
         TM.MinimapButton:Init()
+        TM.Settings:RegisterInGameOptions()
         TM:Print("v" .. TM.VERSION .. " loaded. Type /tally help")
         self:UnregisterEvent("PLAYER_LOGIN")
     end
