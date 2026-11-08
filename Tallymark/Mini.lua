@@ -7,7 +7,7 @@
 -- Layout, top to bottom:
 --   header:  logo, TALLYMARK, and "IN COMBAT 0:42" during a fight
 --   tiles:   shots this fight (or last fight) and ammo left (red when low)
---   shots:   one row per shot picked in settings, with Fight and Total columns
+--   shots:   one row per shot picked in settings, with Last fight and All time columns
 --   total:   all shots, this fight and all time
 --   footer:  steps and distance today
 -- Non-hunters get steps and distance in the tiles, and nothing else.
@@ -23,12 +23,12 @@ TM.Mini = Mini
 local function T() return TM.Theme end
 local W = TM.W
 
-local WIDTH    = 280
+local WIDTH    = 300
 local PAD      = 12
 local GAP      = 8
 local TILE_H   = 58
 local ROW_H    = 20
-local COL_W    = 58     -- width of the Fight and Total columns
+local COL_W    = 76     -- width of the Last fight and All time columns
 local COL_GAP  = 6
 local NAME_W   = WIDTH - PAD * 2 - COL_W * 2 - COL_GAP * 2
 
@@ -179,8 +179,8 @@ local function Build()
     for _, fs in ipairs({ f.head.name, f.head.fight, f.head.all }) do
         fs:SetFont(fs:GetFont(), S.cardLabel, "")
     end
-    f.head.name:SetText("SHOTS")
-    f.head.all:SetText("TOTAL")
+    f.head.name:SetText("BY SHOT")
+    f.head.all:SetText("ALL TIME")
     f.empty = W.Text(f, "body", S.cardLabel, "muted")
     f.empty:SetText("No shots picked. Right-click to pick some.")
     f.lines = {}
@@ -312,7 +312,8 @@ function Mini:Refresh()
 
     -- Shot table
     y = y - 14
-    f.head.fight:SetText("FIGHT")   -- this fight in combat, the last fight after it
+    -- Same words as the big window, so it is clear which fight the numbers are for.
+    f.head.fight:SetText(fight and "THIS FIGHT" or "LAST FIGHT")
     f.head:Place(y)
     f.head:SetShown(true)
     y = y - 18
