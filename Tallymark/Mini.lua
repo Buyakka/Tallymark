@@ -91,7 +91,7 @@ local function Build()
     f:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
     f.rows = {}
-    for i = 1, 4 do f.rows[i] = Row(f, i) end
+    for i = 1, 5 do f.rows[i] = Row(f, i) end
 
     -- Refresh once per second while shown (combat count, steps).
     f:SetScript("OnShow", function()
@@ -144,8 +144,10 @@ function Mini:Refresh()
         elseif state ~= "none" then
             text, low = TM.Commas(n), warnAt ~= nil and n < warnAt
         end
-        SetRow(rows[4], Capital(A:AmmoWord(2)) .. " left", text, low and "warning" or "text")
-        count = 4
+        -- Every shot since install (plus any typed in from before), until a reset.
+        SetRow(rows[4], Capital(A:AmmoWord(2)) .. " all time", TM.Commas(A:LifetimeTotal()))
+        SetRow(rows[5], Capital(A:AmmoWord(2)) .. " left", text, low and "warning" or "text")
+        count = 5
     end
 
     for i = count + 1, #rows do

@@ -66,6 +66,7 @@ local function ShowTooltip(btn)
             AddPair(A:AmmoWord(fight.shots):gsub("^%l", string.upper) .. " this fight",
                 TM.Commas(fight.shots), "accent")
         end
+        AddPair(A:AmmoWord(2):gsub("^%l", string.upper) .. " all time", TM.Commas(A:LifetimeTotal()))
         local n, state = A:AmmoCount()
         local label = A:AmmoWord(2):gsub("^%l", string.upper) .. " left"
         if state == "yes" then

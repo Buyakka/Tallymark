@@ -165,7 +165,7 @@ local function BuildAmmo(page)
 
     -- Third card label follows the ammo type: "Bullets left" or "Arrows left".
     -- It counts ammo in all bags, not only the quiver or ammo pouch.
-    p.cards = CardRow(page, -110, { "Dungeon", "Lifetime", "Ammo left" })
+    p.cards = CardRow(page, -110, { "Dungeon", "All time", "Ammo left" })
 
     -- Bell on the ammo card: shown while the low ammo warning is on.
     local bell = p.cards[3].frame:CreateTexture(nil, "OVERLAY")

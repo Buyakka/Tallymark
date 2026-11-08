@@ -219,7 +219,7 @@ local function BuildAmmo(page)
             TM.db.ammo.warn = v
             TM.UI:Refresh()
         end))
-    s.Add(W.Checkbox(page, "Pop-up alert", "A short alert in the middle of the screen, also during a fight.",
+    s.Add(W.Checkbox(page, "Pop-up alert", "A short alert mid-screen, also during a fight.",
         function() return TM.db.ammo.popup end,
         function(v) TM.db.ammo.popup = v end))
     s.Add(W.Slider(page, "Pop-up shows for", nil, 1, 10, 1,
@@ -236,7 +236,7 @@ local function BuildAmmo(page)
     if hunter then
         s.Heading("BEFORE TALLYMARK")
         s.Add(W.NumberBox(page, "Shots before Tallymark",
-            "Arrows and bullets you used before you installed it. Added to Lifetime.", 0, 9999999, 0,
+            "Arrows and bullets you used before you installed it. Added to All time.", 0, 9999999, 0,
             function() return TM.Arrows:Data().before or 0 end,
             function(v)
                 TM.Arrows:Data().before = v
