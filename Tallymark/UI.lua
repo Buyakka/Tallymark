@@ -230,7 +230,7 @@ local function RefreshAmmo(page)
 
     -- Cards
     p.cards[1].value:SetText(d.dungeon and Commas(d.dungeon.shots) or "-")
-    p.cards[2].value:SetText(Commas(d.lifetime.total))
+    p.cards[2].value:SetText(Commas(A:LifetimeTotal()))   -- includes shots typed in from before
 
     local n, state = A:AmmoCount()
     local quiver = p.cards[3]

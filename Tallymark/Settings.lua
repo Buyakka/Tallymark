@@ -230,6 +230,19 @@ local function BuildAmmo(page)
     local test = W.TextButton(page, "Show a test alert")
     test:SetScript("OnClick", function() TM.Popup:ShowLowAmmo(math.max(0, (TM.db.ammo.warnAt or 200) - 1), true) end)
     s.Add(test, 16, true)
+
+    -- Shots fired before the player installed Tallymark. Set (not added each
+    -- time), so typing it again never counts it twice. Per character.
+    if hunter then
+        s.Heading("BEFORE TALLYMARK")
+        s.Add(W.NumberBox(page, "Shots before Tallymark",
+            "Arrows and bullets you used before you installed it. Added to Lifetime.", 0, 9999999, 0,
+            function() return TM.Arrows:Data().before or 0 end,
+            function(v)
+                TM.Arrows:Data().before = v
+                TM.UI:Refresh()
+            end))
+    end
 end
 
 local function BuildJourney(page)

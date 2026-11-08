@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+### Ammo (hunters)
+- Started using Tallymark late? Settings > Ammo > "Shots before Tallymark": type how many arrows and bullets you used before installing it, and they're added to your Lifetime total. Typing a new number replaces the old one, so it never counts twice. Per character.
+
 ## 0.1.0 - first release
 
 ### Journey

@@ -154,6 +154,7 @@ TM.CHAR_DEFAULTS.arrows = {
     dungeons   = {},        -- last KEEP_DUNGEONS dungeon runs, newest last
     dungeon    = nil,       -- the open dungeon run, kept across /reload
     lastAmmo   = nil,       -- last readable ammo count
+    before     = 0,         -- shots used before installing, typed in settings
 }
 
 local function Data()
@@ -397,6 +398,13 @@ end
 
 -- Read-only helpers for the window.
 function Arrows:Data() return Data() end
+
+-- Every shot ever: counted by Tallymark plus the amount typed in for
+-- before it was installed (Settings > Ammo > Shots before Tallymark).
+function Arrows:LifetimeTotal()
+    local d = Data()
+    return d.lifetime.total + (tonumber(d.before) or 0)
+end
 function Arrows:CurrentFight() return fight end
 function Arrows:LastFight()
     local list = Data().fights
@@ -558,6 +566,9 @@ function Arrows:PrintDebug()
 
     TM:Print(T:Color("text", "Lifetime") .. string.format("  %d shots (%d arrows, %d bullets, %d unknown)",
         d.lifetime.total, d.lifetime.arrow, d.lifetime.bullet, d.lifetime.unknown))
+    if (tonumber(d.before) or 0) > 0 then
+        TM:Print(string.format("  Plus %d from before Tallymark = %d in total", d.before, self:LifetimeTotal()))
+    end
     for _, s in ipairs(SortedCounts(d.byShot)) do
         TM:Print(string.format("  %s: %d", s.name, s.n))
     end

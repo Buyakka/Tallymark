@@ -9,7 +9,7 @@ A World of Warcraft: Forever addon by Buyaka. It works like a fitness tracker fo
 - Low ammo warning on the window and as a short pop-up, at the amount you choose.
 - A full window with Ammo, Journey and History tabs, or a small window to keep on screen.
 
-Status: 0.1.0 Beta. See [CHANGELOG](CHANGELOG.md).
+Status: 0.1.1. See [CHANGELOG](CHANGELOG.md).
 
 > **All Rights Reserved.** Copyright (c) 2026 Buyaka.
 > You may download Tallymark and use it in game. You may not copy, change,
