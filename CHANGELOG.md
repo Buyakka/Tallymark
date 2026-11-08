@@ -7,7 +7,7 @@
 - Rows have a soft stripe so a line is easy to follow, and up to 7 shots show. With more, the last row adds up the rest. Hover it to see each one.
 
 ### New small window
-- Redesigned: a header, two big tiles (shots this fight and ammo left, red when low), a table of your shots with Fight and All time columns, a total row, and steps and distance today at the bottom.
+- Redesigned: a header, two big tiles (shots this fight and ammo left, red when low), a table of your shots with Fight and Total columns, a total row, and steps and distance today at the bottom.
 - Pick which shots show: Settings > Small window > Shots to show. Tick the ones you want, or use All and None. A shot shows once you know it or have used it.
 - Right-clicking the small window now opens the Small window settings.
 

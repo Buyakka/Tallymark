@@ -179,7 +179,8 @@ local function BuildAmmo(page)
     --   BY SHOT            LAST FIGHT    ALL TIME
     --   Auto Shot                   2         372
     -- Rows alternate a soft background so the eye can follow a line across.
-    local COL = 84          -- width of each number column
+    local COL = 90          -- width of each number column
+    local COL_GAP = 8       -- space between the columns
     local INSET = 8         -- text inset inside a row
     local function TableRow(y, height, font, size, color)
         local row = CreateFrame("Frame", nil, page)
@@ -188,11 +189,15 @@ local function BuildAmmo(page)
         row:SetHeight(height)
         row.name = Text(row, font, size, color)
         row.name:SetPoint("LEFT", INSET, 0)
-        row.name:SetPoint("RIGHT", -(INSET + COL * 2), 0)
-        row.all = Text(row, font, size, color, "RIGHT")
-        row.all:SetPoint("RIGHT", -INSET, 0)
-        row.fight = Text(row, font, size, color, "RIGHT")
-        row.fight:SetPoint("RIGHT", -(INSET + COL), 0)
+        row.name:SetPoint("RIGHT", -(INSET + COL * 2 + COL_GAP * 2), 0)
+        -- Number columns have a fixed width and are centered, so each
+        -- number sits right under the middle of its heading.
+        row.all = Text(row, font, size, color, "CENTER")
+        row.all:SetWidth(COL)
+        row.all:SetPoint("RIGHT", 0, 0)
+        row.fight = Text(row, font, size, color, "CENTER")
+        row.fight:SetWidth(COL)
+        row.fight:SetPoint("RIGHT", -(COL + COL_GAP), 0)
         return row
     end
 

@@ -7,7 +7,7 @@
 -- Layout, top to bottom:
 --   header:  logo, TALLYMARK, and "IN COMBAT 0:42" during a fight
 --   tiles:   shots this fight (or last fight) and ammo left (red when low)
---   shots:   one row per shot picked in settings, with Fight and All time columns
+--   shots:   one row per shot picked in settings, with Fight and Total columns
 --   total:   all shots, this fight and all time
 --   footer:  steps and distance today
 -- Non-hunters get steps and distance in the tiles, and nothing else.
@@ -28,8 +28,9 @@ local PAD      = 12
 local GAP      = 8
 local TILE_H   = 58
 local ROW_H    = 20
-local COL_W    = 52     -- width of the Fight and All time columns
-local NAME_W   = WIDTH - PAD * 2 - COL_W * 2 - 14
+local COL_W    = 58     -- width of the Fight and Total columns
+local COL_GAP  = 6
+local NAME_W   = WIDTH - PAD * 2 - COL_W * 2 - COL_GAP * 2
 
 local function SavePosition(frame)
     local point, _, relPoint, x, y = frame:GetPoint(1)
@@ -79,15 +80,18 @@ local function Line(f, font, color)
     local l = {}
     l.name = W.Text(f, font, S.bodyText, color)
     l.name:SetWidth(NAME_W)
-    l.fight = W.Text(f, font, S.bodyText, color, "RIGHT")
-    l.all = W.Text(f, font, S.bodyText, color, "RIGHT")
+    -- Fixed width and centered, so each number sits under the middle of its heading.
+    l.fight = W.Text(f, font, S.bodyText, color, "CENTER")
+    l.fight:SetWidth(COL_W)
+    l.all = W.Text(f, font, S.bodyText, color, "CENTER")
+    l.all:SetWidth(COL_W)
     function l:Place(y)
         self.name:ClearAllPoints()
         self.name:SetPoint("TOPLEFT", PAD, y)
         self.all:ClearAllPoints()
         self.all:SetPoint("TOPRIGHT", -PAD, y)
         self.fight:ClearAllPoints()
-        self.fight:SetPoint("TOPRIGHT", -(PAD + COL_W + 8), y)
+        self.fight:SetPoint("TOPRIGHT", -(PAD + COL_W + COL_GAP), y)
     end
     function l:SetShown(on)
         self.name:SetShown(on)
@@ -176,7 +180,7 @@ local function Build()
         fs:SetFont(fs:GetFont(), S.cardLabel, "")
     end
     f.head.name:SetText("SHOTS")
-    f.head.all:SetText("ALL TIME")
+    f.head.all:SetText("TOTAL")
     f.empty = W.Text(f, "body", S.cardLabel, "muted")
     f.empty:SetText("No shots picked. Right-click to pick some.")
     f.lines = {}
@@ -308,7 +312,7 @@ function Mini:Refresh()
 
     -- Shot table
     y = y - 14
-    f.head.fight:SetText(fight and "FIGHT" or "LAST")
+    f.head.fight:SetText("FIGHT")   -- this fight in combat, the last fight after it
     f.head:Place(y)
     f.head:SetShown(true)
     y = y - 18
