@@ -74,8 +74,10 @@ local function ResetToDefault()
             TM.db[key[1]][key[2]] = D[key[1]][key[2]]
         end
     end
+    wipe(TM.db.ammo.miniHidden)   -- every shot shows on the small window again
     TM.MinimapButton:SetHidden(TM.db.minimap.hide)
     RefreshAll()
+    TM.Mini:Refresh()
     TM:Print("Settings reset to default.")
 end
 
@@ -194,7 +196,69 @@ local function BuildMini(page)
     s.Add(W.Checkbox(page, "Hide during combat", "Off: it stays up so you can watch the fight live.",
         function() return TM.db.mini.hideInCombat end,
         function(v) TM.db.mini.hideInCombat = v end))
-    s.Note("While this page is open, the small window shows on screen so you can see your changes.", 16)
+
+    -- Which shots get a row on the small window. Saved by English name so it
+    -- works the same on every game language. Account-wide.
+    if TM.Arrows and TM.Arrows.enabled then
+        s.Heading("SHOTS TO SHOW")
+        local hidden = function() return TM.db.ammo.miniHidden end
+        local function Changed()
+            for _, c in ipairs(page.shotBoxes) do c:Refresh() end
+            TM.Mini:Refresh()
+        end
+
+        -- All · None links on the heading line.
+        local function Link(label)
+            local b = CreateFrame("Button", nil, page)
+            b.text = W.Text(b, "bodyBold", T().sizes.heading, "accent", "RIGHT")
+            b.text:SetPoint("RIGHT")
+            b.text:SetText(label)
+            b:SetSize(math.ceil(b.text:GetUnboundedStringWidth()) + 4, 18)
+            b:SetScript("OnEnter", function(self) W.SetColor(self.text, "text") end)
+            b:SetScript("OnLeave", function(self) W.SetColor(self.text, "accent") end)
+            return b
+        end
+        local none = Link("NONE")
+        local sep = W.Text(page, "bodyBold", T().sizes.heading, "muted", "RIGHT")
+        local all = Link("ALL")
+        local grid = CreateFrame("Frame", nil, page)
+
+        local shots = TM.Arrows:ShotList()
+        local ROW = 26
+        local colW = (T().sizes.windowWidth - T().sizes.padding * 2) / 2
+        grid:SetHeight(math.ceil(#shots / 2) * ROW)
+        page.shotBoxes = {}
+        for i, sh in ipairs(shots) do
+            local box = W.Checkbox(grid, sh.name or sh.en, nil,
+                function() return not hidden()[sh.en] end,
+                function(v)
+                    hidden()[sh.en] = (not v) or nil
+                    TM.Mini:Refresh()
+                end)
+            box:SetWidth(colW - 8)
+            box:SetPoint("TOPLEFT", ((i - 1) % 2) * colW, -math.floor((i - 1) / 2) * ROW)
+            page.shotBoxes[i] = box
+            Settings.controls[#Settings.controls + 1] = box
+        end
+        s.Add(grid, 10)
+        -- Links sit on the heading's line, right side, 10 + 12 above the grid.
+        none:SetPoint("BOTTOMRIGHT", grid, "TOPRIGHT", 0, 8)
+        sep:SetPoint("RIGHT", none, "LEFT", -6, 0)
+        sep:SetText("·")
+        all:SetPoint("RIGHT", sep, "LEFT", -6, 0)
+        all:SetScript("OnClick", function()
+            wipe(hidden())
+            Changed()
+        end)
+        none:SetScript("OnClick", function()
+            for _, sh in ipairs(shots) do hidden()[sh.en] = true end
+            Changed()
+        end)
+
+        s.Note("A shot shows once you know it or have used it. The small window shows while this page is open.", 12)
+    else
+        s.Note("While this page is open, the small window shows on screen so you can see your changes.", 16)
+    end
 end
 
 local function BuildAmmo(page)

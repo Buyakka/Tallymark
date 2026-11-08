@@ -461,6 +461,24 @@ function Arrows:ShotListCheck()
     return SHOT_IDS
 end
 
+-- Every shot Tallymark counts: { id, en, name }. name is in the player's
+-- language (nil if the ID didn't resolve). en stays the same on every client,
+-- so settings use it as the key.
+function Arrows:ShotList()
+    return self:ShotListCheck()
+end
+
+-- Does this character know the shot? True when the game can't tell us,
+-- so a shot is never hidden by mistake.
+function Arrows:KnowsShot(s)
+    local id = s.usedId or s.id
+    local fn = (C_SpellBook and C_SpellBook.IsSpellKnown) or IsPlayerSpell or IsSpellKnown
+    if type(fn) ~= "function" then return true end
+    local ok, known = pcall(fn, id)
+    if not ok or known == nil or IsSecret(known) then return true end
+    return known and true or false
+end
+
 -- Settings > General > Reset: shots, fights and dungeon runs back to zero
 -- for this character only. A fight in progress keeps going from zero.
 function Arrows:Reset()

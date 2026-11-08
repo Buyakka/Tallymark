@@ -7,6 +7,11 @@
 - New Fight | All time switch on the "By shot" list. All time shows how many of each shot you have used, ever (since installing Tallymark, until you reset).
 - More than 5 kinds of shots? The last row adds up the rest. Hover it to see each one.
 
+### New small window
+- Redesigned: a header, two big tiles (shots this fight and ammo left, red when low), a table of your shots with Fight and All time columns, a total row, and steps and distance today at the bottom.
+- Pick which shots show: Settings > Small window > Shots to show. Tick the ones you want, or use All and None. A shot shows once you know it or have used it.
+- Right-clicking the small window now opens the Small window settings.
+
 ## 0.1.1
 
 ### Ammo (hunters)

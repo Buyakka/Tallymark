@@ -80,6 +80,7 @@ local DB_DEFAULTS = {
         popup        = true,        -- pop-up alert when ammo drops below warnAt
         popupSeconds = 3,           -- how long the pop-up stays before fading
         shotView     = "fight",     -- by shot list on the Ammo tab: "fight" or "all"
+        miniHidden   = {},          -- shots NOT shown on the small window, by English name
     },
     journey = {
         stride = 1.0,               -- yards per step
