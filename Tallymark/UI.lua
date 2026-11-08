@@ -8,7 +8,8 @@ local ADDON, TM = ...
 local UI = {}
 TM.UI = UI
 
-local MAX_SHOT_ROWS    = 5
+local MAX_SHOT_ROWS    = 7
+local SHOT_ROW_H       = 28
 local MAX_HISTORY_ROWS = 10
 local TRAVEL_ORDER = { "foot", "mounted", "flight", "swim", "ghost" }
 
@@ -142,8 +143,6 @@ end
 -- Ammo tab
 ---------------------------------------------------------------------------
 
-local RefreshAmmo   -- defined below; the Fight | All time switch calls it
-
 local function BuildAmmo(page)
     local S = T().sizes
     local p = {}
@@ -176,35 +175,38 @@ local function BuildAmmo(page)
     bell:SetPoint("TOPRIGHT", -8, -8)
     p.bell = bell
 
-    p.shotHeading = Heading(page, -204, "BY SHOT · THIS FIGHT")
+    -- Shot table: a column per number, so nothing runs together.
+    --   BY SHOT            LAST FIGHT    ALL TIME
+    --   Auto Shot                   2         372
+    -- Rows alternate a soft background so the eye can follow a line across.
+    local COL = 84          -- width of each number column
+    local INSET = 8         -- text inset inside a row
+    local function TableRow(y, height, font, size, color)
+        local row = CreateFrame("Frame", nil, page)
+        row:SetPoint("TOPLEFT", 0, y)
+        row:SetPoint("RIGHT")
+        row:SetHeight(height)
+        row.name = Text(row, font, size, color)
+        row.name:SetPoint("LEFT", INSET, 0)
+        row.name:SetPoint("RIGHT", -(INSET + COL * 2), 0)
+        row.all = Text(row, font, size, color, "RIGHT")
+        row.all:SetPoint("RIGHT", -INSET, 0)
+        row.fight = Text(row, font, size, color, "RIGHT")
+        row.fight:SetPoint("RIGHT", -(INSET + COL), 0)
+        return row
+    end
 
-    -- Fight | All time switch on the right of the heading.
-    local function ViewButton(label)
-        local b = CreateFrame("Button", nil, page)
-        b.text = Text(b, "bodyBold", S.heading, "muted", "RIGHT")
-        b.text:SetPoint("RIGHT")
-        b.text:SetText(label)
-        b:SetSize(math.ceil(b.text:GetUnboundedStringWidth()) + 4, 18)
-        return b
-    end
-    p.viewAll = ViewButton("ALL TIME")
-    p.viewAll:SetPoint("TOPRIGHT", 0, -202)
-    local sep = Text(page, "bodyBold", S.heading, "muted", "RIGHT")
-    sep:SetPoint("RIGHT", p.viewAll, "LEFT", -6, 0)
-    sep:SetText("·")
-    p.viewFight = ViewButton("FIGHT")
-    p.viewFight:SetPoint("RIGHT", sep, "LEFT", -6, 0)
-    local function SetView(view)
-        TM.db.ammo.shotView = view
-        RefreshAmmo(page)
-    end
-    p.viewFight:SetScript("OnClick", function() SetView("fight") end)
-    p.viewAll:SetScript("OnClick", function() SetView("all") end)
+    p.head = TableRow(-200, 20, "bodyBold", S.heading, "muted")
+    p.head.name:SetText("BY SHOT")
+    p.head.all:SetText("ALL TIME")
 
     p.rows = {}
     for i = 1, MAX_SHOT_ROWS do
-        local row = BarRow(page, -224 - (i - 1) * 34)
-        row.name:SetPoint("RIGHT", -150, 0)   -- room for "12 · 1,234 all time"
+        local row = TableRow(-224 - (i - 1) * SHOT_ROW_H, SHOT_ROW_H, "body", S.bodyText, "text")
+        if i % 2 == 1 then
+            local bg = Solid(row, "cardBg", "BACKGROUND")   -- on the row itself, so it stays under the text
+            bg:SetAllPoints()
+        end
         row:SetScript("OnEnter", function(self)
             if not self.others then return end
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -212,11 +214,9 @@ local function BuildAmmo(page)
             local mr, mg, mb = T():RGB("muted")
             local tr, tg, tb = T():RGB("text")
             for _, o in ipairs(self.others) do
-                local v = Commas(o.n)
-                if self.allTime then
-                    v = v .. " · " .. Commas(self.allTime[o.name] or o.n) .. " all time"
-                end
-                GameTooltip:AddDoubleLine(o.name, v, mr, mg, mb, tr, tg, tb)
+                GameTooltip:AddDoubleLine(o.name,
+                    string.format("%s %s  ·  %s all time", Commas(o.fight), self.fightWord, Commas(o.all)),
+                    mr, mg, mb, tr, tg, tb)
             end
             GameTooltip:Show()
         end)
@@ -224,7 +224,7 @@ local function BuildAmmo(page)
         p.rows[i] = row
     end
     p.noShots = Text(page, "body", S.bodyText, "muted")
-    p.noShots:SetPoint("TOPLEFT", 0, -224)
+    p.noShots:SetPoint("TOPLEFT", INSET, -232)
     p.noShots:SetText("No shots yet. Go fire a few!")
 
     -- Steps today row at the bottom
@@ -249,7 +249,7 @@ local function BuildAmmo(page)
     page.parts = p
 end
 
-function RefreshAmmo(page)
+local function RefreshAmmo(page)
     local p = page.parts
     local A = TM.Arrows
     local d = A:Data()
@@ -310,55 +310,51 @@ function RefreshAmmo(page)
         p.low:Hide()
     end
 
-    -- By shot. Fight view: this fight in combat, the last fight out of combat,
-    -- with each shot's all-time count next to it. All time view: every shot ever.
-    local allTime = d.byShot or {}
-    local showAll = TM.db.ammo.shotView == "all"
-    local byShot
-    if showAll then
-        byShot = allTime
-        p.shotHeading:SetText("BY SHOT · ALL TIME")
-    else
-        local source = fight or A:LastFight()
-        byShot = source and source.byShot or {}
-        p.shotHeading:SetText(fight and "BY SHOT · THIS FIGHT" or "BY SHOT · LAST FIGHT")
-    end
-    SetColor(p.viewFight.text, showAll and "muted" or "accent")
-    SetColor(p.viewAll.text, showAll and "accent" or "muted")
+    -- Shot table: this fight (or the last fight) next to all time, per shot.
+    local source = fight or A:LastFight()
+    local fightBy = source and source.byShot or {}
+    local allBy = d.byShot or {}
+    p.head.fight:SetText(fight and "THIS FIGHT" or "LAST FIGHT")
 
     local list = {}
-    for name, count in pairs(byShot) do list[#list + 1] = { name = name, n = count } end
-    table.sort(list, function(a, b) return a.n > b.n end)
+    for name, n in pairs(allBy) do
+        list[#list + 1] = { name = name, fight = fightBy[name] or 0, all = n }
+    end
+    for name, n in pairs(fightBy) do
+        if allBy[name] == nil then list[#list + 1] = { name = name, fight = n, all = n } end
+    end
+    -- Shots used in the fight first, then the most used all time.
+    table.sort(list, function(a, b)
+        if a.fight ~= b.fight then return a.fight > b.fight end
+        if a.all ~= b.all then return a.all > b.all end
+        return a.name < b.name
+    end)
 
-    -- More shots than rows: the last row adds up the rest.
+    -- More shots than rows: the last row adds them up. Hover it to see each one.
     if #list > MAX_SHOT_ROWS then
-        local rest = 0
-        for i = MAX_SHOT_ROWS, #list do rest = rest + list[i].n end
-        local others = #list - MAX_SHOT_ROWS + 1
-        local hidden = {}
-        for i = MAX_SHOT_ROWS, #list do hidden[#hidden + 1] = list[i] end
+        local rest = { name = "", fight = 0, all = 0, others = {} }
+        for i = MAX_SHOT_ROWS, #list do
+            rest.fight = rest.fight + list[i].fight
+            rest.all = rest.all + list[i].all
+            rest.others[#rest.others + 1] = list[i]
+        end
+        rest.name = string.format("%d other shots", #rest.others)
         for i = #list, MAX_SHOT_ROWS, -1 do list[i] = nil end
-        list[MAX_SHOT_ROWS] = { name = string.format("%d other shots", others), n = rest, other = hidden }
+        list[MAX_SHOT_ROWS] = rest
     end
 
-    local top = 0
-    for _, s in ipairs(list) do top = math.max(top, s.n) end
     p.noShots:SetShown(#list == 0)
     for i, row in ipairs(p.rows) do
         local s = list[i]
         if s then
             row:Show()
             row.name:SetText(s.name)
-            local value = Commas(s.n)
-            if not showAll and not s.other then
-                value = value .. T():Color("muted", " · " .. Commas(allTime[s.name] or s.n) .. " all time")
-            end
-            row.value:SetText(value)
-            SetBar(row, top > 0 and s.n / top or 0)
-            -- Hover "N other shots" to see each one.
-            row.others = s.other
-            row.allTime = (not showAll) and allTime or nil
-            row:EnableMouse(s.other ~= nil)
+            row.fight:SetText(Commas(s.fight))
+            SetColor(row.fight, s.fight == 0 and "muted" or (fight and "accent" or "text"))
+            row.all:SetText(Commas(s.all))
+            row.others = s.others
+            row.fightWord = fight and "this fight" or "last fight"
+            row:EnableMouse(s.others ~= nil)
         else
             row:Hide()
         end
