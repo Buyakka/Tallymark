@@ -244,13 +244,14 @@ local function RefreshAmmo(page)
         quiver.value:SetText(n)   -- shown as is, no math on a secret
     else
         quiver.value:SetText(Commas(n))
-        low = warnAt ~= nil and n < warnAt
+        low = warnAt ~= nil and n <= warnAt
     end
     p.bell:SetShown(warnAt ~= nil)
     if low then
-        SetBoxColors(quiver.frame, "cardBg", "warningBorder")
-        SetColor(quiver.value, "warning")
-        p.bell:SetVertexColor(T():RGB("warning"))
+        -- Red number, border and bell so low ammo stands out at a glance.
+        SetBoxColors(quiver.frame, "cardBg", "lowAmmoBorder")
+        SetColor(quiver.value, "lowAmmo")
+        p.bell:SetVertexColor(T():RGB("lowAmmo"))
         p.low:Show()
         if state == "none" then
             p.lowText:SetText("No ammo equipped. Time to restock.")

@@ -71,9 +71,9 @@ local function ShowTooltip(btn)
         local label = A:AmmoWord(2):gsub("^%l", string.upper) .. " left"
         if state == "yes" then
             local at = TM:LowAmmoAt()
-            AddPair(label, TM.Commas(n), (at and n < at) and "warning" or "text")
+            AddPair(label, TM.Commas(n), (at and n <= at) and "lowAmmo" or "text")
         elseif state == "none" then
-            AddPair(label, "none equipped", "warning")
+            AddPair(label, "none equipped", "lowAmmo")
         end
         -- A secret count is skipped here: it can't be joined into tooltip text safely.
     end

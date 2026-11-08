@@ -142,11 +142,11 @@ function Mini:Refresh()
         if state == "secret" then
             text, low = n, false          -- shown as is, no math on a secret
         elseif state ~= "none" then
-            text, low = TM.Commas(n), warnAt ~= nil and n < warnAt
+            text, low = TM.Commas(n), warnAt ~= nil and n <= warnAt
         end
         -- Every shot since install (plus any typed in from before), until a reset.
         SetRow(rows[4], Capital(A:AmmoWord(2)) .. " all time", TM.Commas(A:LifetimeTotal()))
-        SetRow(rows[5], Capital(A:AmmoWord(2)) .. " left", text, low and "warning" or "text")
+        SetRow(rows[5], Capital(A:AmmoWord(2)) .. " left", text, low and "lowAmmo" or "text")
         count = 5
     end
 

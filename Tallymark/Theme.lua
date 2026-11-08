@@ -30,6 +30,10 @@ Theme.colors = {
     warningBox    = Hex("2A2310"),
     warningBorder = Hex("B8860B"),
     danger        = Hex("E5484D"),
+    -- Ammo left at or under the "Warn me at" amount. Brighter than danger
+    -- so it passes 4.5:1 contrast on the window and card backgrounds.
+    lowAmmo       = Hex("FF6B6B"),
+    lowAmmoBorder = Hex("B23A3A"),
 }
 
 -- Fonts: Space Grotesk Bold for the name and big numbers, Inter for the rest.

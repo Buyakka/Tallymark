@@ -7,6 +7,10 @@
 - The "Lifetime" card is now called "All time": every arrow and bullet since you installed Tallymark (plus any you typed in), until you reset.
 - The small window and the minimap tooltip show your all-time arrows or bullets too.
 
+### Low ammo warning
+- Ammo left turns red (number, card border and bell) in the full window, the small window and the minimap tooltip when you reach your warning amount.
+- The warning now starts AT your amount, not just below it: set 200 and it warns at 200. The setting is now called "Warn me at".
+
 ## 0.1.0 - first release
 
 ### Journey
