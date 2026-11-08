@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2
+
+### Ammo (hunters)
+- Every shot row now shows its all-time count too, for example "Arcane Shot 12 · 340 all time": this fight next to your total.
+- New Fight | All time switch on the "By shot" list. All time shows how many of each shot you have used, ever (since installing Tallymark, until you reset).
+- More than 5 kinds of shots? The last row adds up the rest. Hover it to see each one.
+
 ## 0.1.1
 
 ### Ammo (hunters)

@@ -142,6 +142,8 @@ end
 -- Ammo tab
 ---------------------------------------------------------------------------
 
+local RefreshAmmo   -- defined below; the Fight | All time switch calls it
+
 local function BuildAmmo(page)
     local S = T().sizes
     local p = {}
@@ -175,9 +177,51 @@ local function BuildAmmo(page)
     p.bell = bell
 
     p.shotHeading = Heading(page, -204, "BY SHOT · THIS FIGHT")
+
+    -- Fight | All time switch on the right of the heading.
+    local function ViewButton(label)
+        local b = CreateFrame("Button", nil, page)
+        b.text = Text(b, "bodyBold", S.heading, "muted", "RIGHT")
+        b.text:SetPoint("RIGHT")
+        b.text:SetText(label)
+        b:SetSize(math.ceil(b.text:GetUnboundedStringWidth()) + 4, 18)
+        return b
+    end
+    p.viewAll = ViewButton("ALL TIME")
+    p.viewAll:SetPoint("TOPRIGHT", 0, -202)
+    local sep = Text(page, "bodyBold", S.heading, "muted", "RIGHT")
+    sep:SetPoint("RIGHT", p.viewAll, "LEFT", -6, 0)
+    sep:SetText("·")
+    p.viewFight = ViewButton("FIGHT")
+    p.viewFight:SetPoint("RIGHT", sep, "LEFT", -6, 0)
+    local function SetView(view)
+        TM.db.ammo.shotView = view
+        RefreshAmmo(page)
+    end
+    p.viewFight:SetScript("OnClick", function() SetView("fight") end)
+    p.viewAll:SetScript("OnClick", function() SetView("all") end)
+
     p.rows = {}
     for i = 1, MAX_SHOT_ROWS do
-        p.rows[i] = BarRow(page, -224 - (i - 1) * 34)
+        local row = BarRow(page, -224 - (i - 1) * 34)
+        row.name:SetPoint("RIGHT", -150, 0)   -- room for "12 · 1,234 all time"
+        row:SetScript("OnEnter", function(self)
+            if not self.others then return end
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:AddLine("Other shots", T():RGB("text"))
+            local mr, mg, mb = T():RGB("muted")
+            local tr, tg, tb = T():RGB("text")
+            for _, o in ipairs(self.others) do
+                local v = Commas(o.n)
+                if self.allTime then
+                    v = v .. " · " .. Commas(self.allTime[o.name] or o.n) .. " all time"
+                end
+                GameTooltip:AddDoubleLine(o.name, v, mr, mg, mb, tr, tg, tb)
+            end
+            GameTooltip:Show()
+        end)
+        row:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        p.rows[i] = row
     end
     p.noShots = Text(page, "body", S.bodyText, "muted")
     p.noShots:SetPoint("TOPLEFT", 0, -224)
@@ -205,7 +249,7 @@ local function BuildAmmo(page)
     page.parts = p
 end
 
-local function RefreshAmmo(page)
+function RefreshAmmo(page)
     local p = page.parts
     local A = TM.Arrows
     local d = A:Data()
@@ -266,22 +310,55 @@ local function RefreshAmmo(page)
         p.low:Hide()
     end
 
-    -- By shot: this fight in combat, the last fight out of combat.
-    local source = fight or A:LastFight()
-    local byShot = source and source.byShot or {}
-    p.shotHeading:SetText(fight and "BY SHOT · THIS FIGHT" or "BY SHOT · LAST FIGHT")
+    -- By shot. Fight view: this fight in combat, the last fight out of combat,
+    -- with each shot's all-time count next to it. All time view: every shot ever.
+    local allTime = d.byShot or {}
+    local showAll = TM.db.ammo.shotView == "all"
+    local byShot
+    if showAll then
+        byShot = allTime
+        p.shotHeading:SetText("BY SHOT · ALL TIME")
+    else
+        local source = fight or A:LastFight()
+        byShot = source and source.byShot or {}
+        p.shotHeading:SetText(fight and "BY SHOT · THIS FIGHT" or "BY SHOT · LAST FIGHT")
+    end
+    SetColor(p.viewFight.text, showAll and "muted" or "accent")
+    SetColor(p.viewAll.text, showAll and "accent" or "muted")
+
     local list = {}
     for name, count in pairs(byShot) do list[#list + 1] = { name = name, n = count } end
     table.sort(list, function(a, b) return a.n > b.n end)
-    local top = list[1] and list[1].n or 0
+
+    -- More shots than rows: the last row adds up the rest.
+    if #list > MAX_SHOT_ROWS then
+        local rest = 0
+        for i = MAX_SHOT_ROWS, #list do rest = rest + list[i].n end
+        local others = #list - MAX_SHOT_ROWS + 1
+        local hidden = {}
+        for i = MAX_SHOT_ROWS, #list do hidden[#hidden + 1] = list[i] end
+        for i = #list, MAX_SHOT_ROWS, -1 do list[i] = nil end
+        list[MAX_SHOT_ROWS] = { name = string.format("%d other shots", others), n = rest, other = hidden }
+    end
+
+    local top = 0
+    for _, s in ipairs(list) do top = math.max(top, s.n) end
     p.noShots:SetShown(#list == 0)
     for i, row in ipairs(p.rows) do
         local s = list[i]
         if s then
             row:Show()
             row.name:SetText(s.name)
-            row.value:SetText(Commas(s.n))
-            SetBar(row, s.n / top)
+            local value = Commas(s.n)
+            if not showAll and not s.other then
+                value = value .. T():Color("muted", " · " .. Commas(allTime[s.name] or s.n) .. " all time")
+            end
+            row.value:SetText(value)
+            SetBar(row, top > 0 and s.n / top or 0)
+            -- Hover "N other shots" to see each one.
+            row.others = s.other
+            row.allTime = (not showAll) and allTime or nil
+            row:EnableMouse(s.other ~= nil)
         else
             row:Hide()
         end
