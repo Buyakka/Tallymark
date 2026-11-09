@@ -179,7 +179,7 @@ end
 ---------------------------------------------------------------------------
 
 local COMMANDS = {
-    { "/tally  or  /tm", "Show or hide the Tallymark window." },
+    { "/tally  or  /tallymark", "Show or hide the Tallymark window." },
     { "/tally minimap", "Show or hide the minimap button." },
     { "/tally help",   "List all commands." },
     { "/tally settings", "Open settings (or click the gear)." },
@@ -321,7 +321,8 @@ local function PrintTest()
 end
 
 SLASH_TALLY1 = "/tally"
-SLASH_TALLY2 = "/tm"
+-- Not /tm: that is the game's own raid target marker command (and other addons use it).
+SLASH_TALLY2 = "/tallymark"
 SlashCmdList["TALLY"] = function(msg)
     if not TM.db then return end
     local cmd = strtrim(msg or ""):lower()

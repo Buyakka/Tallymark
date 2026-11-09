@@ -9,7 +9,7 @@ A World of Warcraft: Forever addon by Buyaka. It works like a fitness tracker fo
 - Low ammo warning on the window and as a short pop-up, at the amount you choose.
 - A full window with Ammo, Journey and History tabs, or a small window to keep on screen.
 
-Status: 0.1.2. See [CHANGELOG](CHANGELOG.md).
+Status: 0.1.3. See [CHANGELOG](CHANGELOG.md).
 
 > **All Rights Reserved.** Copyright (c) 2026 Buyaka.
 > You may download Tallymark and use it in game. You may not copy, change,
@@ -19,7 +19,7 @@ Status: 0.1.2. See [CHANGELOG](CHANGELOG.md).
 
 ## Commands
 
-- `/tally` or `/tm` show or hide the window (or click the minimap button)
+- `/tally` or `/tallymark` show or hide the window (or click the minimap button)
 - `/tally minimap` show or hide the minimap button
 - `/tally settings` open settings (or click the gear, or right-click the minimap button or the small window)
 - `/tally help` list all commands

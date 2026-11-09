@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+### Fixed
+- Tallymark no longer uses `/tm`. That's the game's own command for raid target markers, so marker buttons and macros from other addons ended up opening Tallymark or printing its help instead. Use `/tally` or `/tallymark` now.
+
 ## 0.1.2
 
 ### Ammo (hunters)

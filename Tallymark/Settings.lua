@@ -149,7 +149,7 @@ local function BuildGeneral(page)
         function(v) TM.db.window.hideInCombat = v end))
 
     s.Heading("MINIMAP")
-    s.Add(W.Checkbox(page, "Show minimap button", "You can always open Tallymark with /tally or /tm.",
+    s.Add(W.Checkbox(page, "Show minimap button", "You can always open Tallymark with /tally.",
         function() return not TM.db.minimap.hide end,
         function(v) TM.MinimapButton:SetHidden(not v) end))
 

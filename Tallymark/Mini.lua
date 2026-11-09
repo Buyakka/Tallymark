@@ -1,6 +1,6 @@
 -- Mini.lua
 -- The small window: a compact card that can stay on screen all the time.
--- Turned on with Settings > Small window. When it is on, /tally, /tm and the
+-- Turned on with Settings > Small window. When it is on, /tally, /tallymark and the
 -- minimap left-click show or hide this card instead of the big window.
 -- Click the card for the full window, right-click for settings.
 --

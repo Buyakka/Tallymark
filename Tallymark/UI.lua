@@ -646,7 +646,7 @@ local function Build()
     tagline:SetText("EVERY STEP. EVERY SHOT.")
 
     local close = IconButton(f, T().textures.close, function()
-        return { "Close (Esc)", "Type /tm or click the minimap button to open again." }
+        return { "Close (Esc)", "Type /tally or click the minimap button to open again." }
     end)
     close:SetPoint("TOPRIGHT", -S.padding, -S.padding + 2)
     close:SetScript("OnClick", function() UI:Hide() end)
